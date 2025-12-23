@@ -15,10 +15,41 @@ import uploadRoutes from './routes/upload.routes';
 const app: Application = express();
 
 // Middleware
-app.use(cors({
-    origin: process.env.FRONTEND_URL || 'http://localhost:5173',
-    credentials: true,
-}));
+const parseAllowedOrigins = (value: string | undefined): string[] => {
+    if (!value) return [];
+    return value
+        .split(',')
+        .map((s) => s.trim())
+        .filter(Boolean);
+};
+
+const allowedOrigins = parseAllowedOrigins(process.env.FRONTEND_URL);
+
+app.use(
+    cors({
+        origin: (origin, callback) => {
+            // Allow non-browser clients (no Origin header)
+            if (!origin) return callback(null, true);
+
+            // If FRONTEND_URL is configured, enforce it (supports comma-separated list)
+            if (allowedOrigins.length > 0) {
+                return callback(null, allowedOrigins.includes(origin));
+            }
+
+            // Dev fallback
+            if (process.env.NODE_ENV !== 'production') {
+                const devAllowed = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+                return callback(null, devAllowed.includes(origin));
+            }
+
+            // Production fallback: allow all origins (no cookies). Prefer setting FRONTEND_URL.
+            return callback(null, true);
+        },
+        credentials: Boolean(process.env.FRONTEND_URL),
+        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+        allowedHeaders: ['Content-Type', 'Authorization'],
+    })
+);
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
