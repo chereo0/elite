@@ -25,6 +25,15 @@ const allowedOrigins = new Set(
     .filter(Boolean)
 );
 
+// By default, allow Vercel preview/prod domains for this frontend.
+// Set ALLOW_VERCEL_APP_ORIGINS=false to disable.
+const allowVercelAppOrigins = (process.env.ALLOW_VERCEL_APP_ORIGINS ?? 'true').toLowerCase() !== 'false';
+const isAllowedByPattern = (origin) => {
+  if (!allowVercelAppOrigins) return false;
+  // Allow any https://*.vercel.app (covers preview + prod aliases)
+  return typeof origin === 'string' && /^https:\/\/[a-z0-9-]+\.vercel\.app$/i.test(origin);
+};
+
 // In dev, also allow localhost Vite.
 if (process.env.NODE_ENV !== 'production') {
   allowedOrigins.add('http://localhost:5173');
@@ -36,7 +45,7 @@ const corsOptions = {
     // Allow non-browser clients (no Origin header)
     if (!origin) return callback(null, true);
     const normalized = normalizeOrigin(origin);
-    return callback(null, allowedOrigins.has(normalized));
+    return callback(null, allowedOrigins.has(normalized) || isAllowedByPattern(normalized));
   },
   credentials: false,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
