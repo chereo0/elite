@@ -27,6 +27,7 @@ interface Category {
 }
 
 const MotionBox = motion(Box);
+const MotionRouterLink = motion(RouterLink);
 
 // Category images mapping - you can customize these
 const categoryImages: { [key: string]: string } = {
@@ -214,31 +215,31 @@ const OurCategories = () => {
                         <AnimatePresence>
                             {categories.map((category, index) => (
                                 <Grid item xs={12} sm={6} md={4} key={category._id}>
-                                    <MotionBox
-                                        initial={{ opacity: 0, y: 30 }}
-                                        whileInView={{ opacity: 1, y: 0 }}
-                                        transition={{ duration: 0.5, delay: index * 0.1 }}
-                                        viewport={{ once: true }}
-                                        whileHover={{ y: -10, scale: 1.02 }}
-                                        onHoverStart={() => setHoveredCategory(category._id)}
-                                        onHoverEnd={() => setHoveredCategory(null)}
-                                        component={RouterLink}
+                                    <MotionRouterLink
                                         to={`/shop?category=${category._id}`}
-                                        sx={{
-                                            display: 'block',
-                                            textDecoration: 'none',
-                                            position: 'relative',
-                                            height: 280,
-                                            borderRadius: 4,
-                                            overflow: 'hidden',
-                                            cursor: 'pointer',
-                                            boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
-                                            transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
-                                            '&:hover': {
-                                                boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
-                                            },
-                                        }}
+                                        style={{ display: 'block', textDecoration: 'none' }}
                                     >
+                                        <MotionBox
+                                            initial={{ opacity: 0, y: 30 }}
+                                            whileInView={{ opacity: 1, y: 0 }}
+                                            transition={{ duration: 0.5, delay: index * 0.1 }}
+                                            viewport={{ once: true }}
+                                            whileHover={{ y: -10, scale: 1.02 }}
+                                            onHoverStart={() => setHoveredCategory(category._id)}
+                                            onHoverEnd={() => setHoveredCategory(null)}
+                                            sx={{
+                                                position: 'relative',
+                                                height: 280,
+                                                borderRadius: 4,
+                                                overflow: 'hidden',
+                                                cursor: 'pointer',
+                                                boxShadow: '0 10px 40px rgba(0, 0, 0, 0.3)',
+                                                transition: 'all 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                '&:hover': {
+                                                    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.5)',
+                                                },
+                                            }}
+                                        >
                                         {/* Background Image */}
                                         <Box
                                             sx={{
@@ -391,7 +392,8 @@ const OurCategories = () => {
                                                 )}
                                             </AnimatePresence>
                                         </Box>
-                                    </MotionBox>
+                                        </MotionBox>
+                                    </MotionRouterLink>
                                 </Grid>
                             ))}
                         </AnimatePresence>
