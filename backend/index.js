@@ -1,6 +1,7 @@
 import express from 'express';
 import cors from 'cors';
 import dotenv from 'dotenv';
+import authRouter from './routes/auth.js';
 
 dotenv.config();
 
@@ -35,7 +36,10 @@ app.get('/health', (_req, res) => {
   });
 });
 
-// Minimal route mounts (replace with your real route handlers)
+// Route mounts
+app.use('/api/auth', authRouter);
+
+// Minimal API routes to keep frontend running (replace with real handlers)
 app.get('/api/products', (req, res) => {
   const limit = Number(req.query.limit ?? 0);
   res.json({
@@ -49,15 +53,6 @@ app.get('/api/categories', (_req, res) => {
   res.json({
     success: true,
     data: [],
-  });
-});
-
-app.post('/api/auth/login', (_req, res) => {
-  // Placeholder response to prove CORS works.
-  // Replace with real JWT auth implementation.
-  res.json({
-    success: false,
-    message: 'Not implemented: replace /api/auth/login handler',
   });
 });
 
