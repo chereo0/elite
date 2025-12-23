@@ -3,18 +3,40 @@ import cors from 'cors';
 import dotenv from 'dotenv';
 import mongoose from 'mongoose';
 import authRouter from './routes/auth.js';
+import productsRouter from './routes/products.js';
+import categoriesRouter from './routes/categories.js';
+import ordersRouter from './routes/orders.js';
+import usersRouter from './routes/users.js';
+import statsRouter from './routes/stats.js';
+import uploadRouter from './routes/upload.js';
 
 dotenv.config();
 
 const app = express();
 
-const ALLOWED_ORIGIN = 'https://elite-iota-gray.vercel.app';
+const DEFAULT_FRONTEND = 'https://elite-iota-gray.vercel.app';
+
+const normalizeOrigin = (value) => (typeof value === 'string' ? value.trim().replace(/\/+$/, '') : '');
+
+const allowedOrigins = new Set(
+  (process.env.FRONTEND_URLS || process.env.FRONTEND_URL || DEFAULT_FRONTEND)
+    .split(',')
+    .map(normalizeOrigin)
+    .filter(Boolean)
+);
+
+// In dev, also allow localhost Vite.
+if (process.env.NODE_ENV !== 'production') {
+  allowedOrigins.add('http://localhost:5173');
+  allowedOrigins.add('http://127.0.0.1:5173');
+}
 
 const corsOptions = {
   origin: (origin, callback) => {
     // Allow non-browser clients (no Origin header)
     if (!origin) return callback(null, true);
-    return callback(null, origin === ALLOWED_ORIGIN);
+    const normalized = normalizeOrigin(origin);
+    return callback(null, allowedOrigins.has(normalized));
   },
   credentials: false,
   methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
@@ -28,6 +50,9 @@ app.options('*', cors(corsOptions));
 
 app.use(express.json({ limit: '10mb' }));
 
+// Static uploads
+app.use('/uploads', express.static('uploads'));
+
 // Health route for Render/Vercel testing
 app.get('/health', (_req, res) => {
   res.json({
@@ -39,23 +64,12 @@ app.get('/health', (_req, res) => {
 
 // Route mounts
 app.use('/api/auth', authRouter);
-
-// Minimal API routes to keep frontend running (replace with real handlers)
-app.get('/api/products', (req, res) => {
-  const limit = Number(req.query.limit ?? 0);
-  res.json({
-    success: true,
-    data: [],
-    limit: Number.isFinite(limit) ? limit : 0,
-  });
-});
-
-app.get('/api/categories', (_req, res) => {
-  res.json({
-    success: true,
-    data: [],
-  });
-});
+app.use('/api/products', productsRouter);
+app.use('/api/categories', categoriesRouter);
+app.use('/api/orders', ordersRouter);
+app.use('/api/users', usersRouter);
+app.use('/api/stats', statsRouter);
+app.use('/api/upload', uploadRouter);
 
 // 404
 app.use((_req, res) => {
