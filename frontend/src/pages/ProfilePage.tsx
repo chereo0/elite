@@ -23,10 +23,9 @@ import SaveIcon from '@mui/icons-material/Save';
 import PersonIcon from '@mui/icons-material/Person';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { API_URL } from '../config/api';
 
 const MotionBox = motion(Box);
-
-const API_URL = 'http://localhost:5000/api';
 
 interface User {
     _id: string;

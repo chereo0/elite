@@ -18,8 +18,8 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { motion } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
+import { API_URL } from '../config/api';
 
-const API_URL = 'http://localhost:5000/api';
 
 interface Product {
     _id: string;

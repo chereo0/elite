@@ -52,11 +52,10 @@ import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Link as RouterLink } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
+import { API_URL } from '../config/api';
 
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
-
-const API_URL = 'http://localhost:5000/api';
 
 // Glassmorphism styles
 const glassCardStyles = {

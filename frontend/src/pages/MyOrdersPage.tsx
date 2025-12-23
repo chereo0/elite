@@ -21,8 +21,8 @@ import ArrowBackIcon from '@mui/icons-material/ArrowBack';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { API_URL } from '../config/api';
 
-const API_URL = 'http://localhost:5000/api';
 
 interface OrderItem {
     product: { _id: string; name: string; image: string } | string;

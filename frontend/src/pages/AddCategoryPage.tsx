@@ -56,10 +56,10 @@ import ImageIcon from '@mui/icons-material/Image';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Link as RouterLink } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
+import { API_URL } from '../config/api';
 
 const MotionBox = motion(Box);
 
-const API_URL = 'http://localhost:5000/api';
 
 // Glassmorphism styles
 const glassCardStyles = {

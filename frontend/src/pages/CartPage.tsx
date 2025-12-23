@@ -35,8 +35,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCart } from '../contexts/CartContext';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 const MotionBox = motion(Box);
 

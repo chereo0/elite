@@ -48,8 +48,7 @@ import VisibilityIcon from '@mui/icons-material/Visibility';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 const MotionBox = motion(Box);
 

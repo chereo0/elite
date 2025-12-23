@@ -10,8 +10,7 @@ import CategoryIcon from '@mui/icons-material/Category';
 import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 interface Subcategory {
     _id: string;

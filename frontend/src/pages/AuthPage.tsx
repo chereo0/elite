@@ -22,11 +22,9 @@ import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import GoogleIcon from '@mui/icons-material/Google';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import { API_URL } from '../config/api';
 
 const MotionBox = motion(Box);
-
-// API Base URL
-const API_URL = 'http://localhost:5000/api';
 
 // Google Client ID (configure via Vite env var)
 const GOOGLE_CLIENT_ID = import.meta.env.VITE_GOOGLE_CLIENT_ID;

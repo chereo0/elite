@@ -45,8 +45,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useCart } from '../contexts/CartContext';
-
-const API_URL = 'http://localhost:5000/api';
+import { API_URL } from '../config/api';
 
 interface Subcategory {
     _id: string;

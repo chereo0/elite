@@ -15,9 +15,9 @@ import {
     UsersTable,
     StarfieldBackground,
 } from '../components/admin';
+import { API_URL } from '../config/api';
 
 const MotionBox = motion(Box);
-const API_URL = 'http://localhost:5000/api';
 
 interface DashboardStats {
     counts: {
