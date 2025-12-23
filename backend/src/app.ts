@@ -36,16 +36,8 @@ app.use(
                 return callback(null, allowedOrigins.includes(origin));
             }
 
-            // Dev fallback
-            if (process.env.NODE_ENV !== 'production') {
-                const devAllowed = ['http://localhost:5173', 'http://127.0.0.1:5173'];
-                return callback(null, devAllowed.includes(origin));
-            }
-
-            // Production fallback: allow common hosted frontends (recommended: set FRONTEND_URL)
-            const prodAllowedPatterns = [/\.vercel\.app$/i, /\.netlify\.app$/i];
-            const isAllowed = prodAllowedPatterns.some((re) => re.test(origin));
-            return callback(null, isAllowed);
+            // Fallback: allow any origin (recommended: set FRONTEND_URL)
+            return callback(null, true);
         },
         credentials: false,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
