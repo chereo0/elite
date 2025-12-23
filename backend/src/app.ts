@@ -42,10 +42,12 @@ app.use(
                 return callback(null, devAllowed.includes(origin));
             }
 
-            // Production fallback: allow all origins (no cookies). Prefer setting FRONTEND_URL.
-            return callback(null, true);
+            // Production fallback: allow common hosted frontends (recommended: set FRONTEND_URL)
+            const prodAllowedPatterns = [/\.vercel\.app$/i, /\.netlify\.app$/i];
+            const isAllowed = prodAllowedPatterns.some((re) => re.test(origin));
+            return callback(null, isAllowed);
         },
-        credentials: Boolean(process.env.FRONTEND_URL),
+        credentials: false,
         methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
         allowedHeaders: ['Content-Type', 'Authorization'],
     })
