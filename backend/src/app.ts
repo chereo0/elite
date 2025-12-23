@@ -15,35 +15,49 @@ import uploadRoutes from './routes/upload.routes';
 const app: Application = express();
 
 // Middleware
-const parseAllowedOrigins = (value: string | undefined): string[] => {
-    if (!value) return [];
-    return value
-        .split(',')
-        .map((s) => s.trim())
-        .filter(Boolean);
+const isProd = process.env.NODE_ENV === 'production';
+
+// Production allowlist (do not allow localhost in production)
+const PROD_ALLOWED_ORIGINS = new Set<string>([
+    'https://elite-iota-gray.vercel.app',
+]);
+
+// Optional override via env (comma-separated)
+const envOrigins = (process.env.FRONTEND_URL ?? '')
+    .split(',')
+    .map((s) => s.trim())
+    .filter(Boolean);
+
+const allowedOrigins = envOrigins.length > 0 ? new Set(envOrigins) : PROD_ALLOWED_ORIGINS;
+
+const corsOptions: cors.CorsOptions = {
+    origin: (origin, callback) => {
+        // Allow server-to-server calls and same-origin requests (no Origin header)
+        if (!origin) return callback(null, true);
+
+        if (!isProd) {
+            const devAllowed = new Set<string>([
+                ...allowedOrigins,
+                'http://localhost:5173',
+                'http://127.0.0.1:5173',
+            ]);
+            return callback(null, devAllowed.has(origin));
+        }
+
+        return callback(null, allowedOrigins.has(origin));
+    },
+    credentials: false,
+    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+    allowedHeaders: ['Content-Type', 'Authorization'],
+    optionsSuccessStatus: 204,
 };
 
-const allowedOrigins = parseAllowedOrigins(process.env.FRONTEND_URL);
+// CORS MUST be applied before routes
+app.use(cors(corsOptions));
 
-app.use(
-    cors({
-        origin: (origin, callback) => {
-            // Allow non-browser clients (no Origin header)
-            if (!origin) return callback(null, true);
+// Properly handle preflight requests
+app.options('*', cors(corsOptions));
 
-            // If FRONTEND_URL is configured, enforce it (supports comma-separated list)
-            if (allowedOrigins.length > 0) {
-                return callback(null, allowedOrigins.includes(origin));
-            }
-
-            // Fallback: allow any origin (recommended: set FRONTEND_URL)
-            return callback(null, true);
-        },
-        credentials: false,
-        methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-        allowedHeaders: ['Content-Type', 'Authorization'],
-    })
-);
 app.use(express.json({ limit: '50mb' }));
 app.use(express.urlencoded({ extended: true, limit: '50mb' }));
 
