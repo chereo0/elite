@@ -14,6 +14,9 @@ import uploadRoutes from './routes/upload.routes';
 // Create Express app
 const app: Application = express();
 
+// Trust proxy for correct protocol detection behind load balancers (Render, Vercel, etc.)
+app.set('trust proxy', 1);
+
 // Middleware
 const isProd = process.env.NODE_ENV === 'production';
 
