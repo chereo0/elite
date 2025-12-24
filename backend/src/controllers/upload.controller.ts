@@ -20,7 +20,12 @@ export const uploadImage = async (req: Request, res: Response): Promise<void> =>
         const file = req.file;
 
         // Build the URL - adjust based on your server configuration
-        const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+        let baseUrl = process.env.BASE_URL;
+        if (!baseUrl) {
+             const protocol = req.headers['x-forwarded-proto'] ? String(req.headers['x-forwarded-proto']) : req.protocol;
+             const host = req.get('host');
+             baseUrl = `${protocol}://${host}`;
+        }
         const imageUrl = `${baseUrl}/uploads/${file.filename}`;
 
         res.json({

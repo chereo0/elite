@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Product from '../models/Product';
+import { fixImageUrl } from '../utils/urlHelper';
 
 /**
  * @desc    Get all products
@@ -53,6 +54,16 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
         const allBrands = await Product.distinct('brand');
         const brands = allBrands.filter(b => b && b.trim() !== '');
 
+        // Fix image URLs
+        const productsWithFixedUrls = products.map(product => {
+            const p = product.toObject();
+            if (p.image) p.image = fixImageUrl(p.image, req);
+            if (p.images && Array.isArray(p.images)) {
+                p.images = p.images.map((img: string) => fixImageUrl(img, req));
+            }
+            return p;
+        });
+
         res.json({
             success: true,
             count: products.length,
@@ -60,7 +71,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
             page,
             pages: Math.ceil(total / limit),
             brands,
-            data: products,
+            data: productsWithFixedUrls,
         });
     } catch (error) {
         res.status(500).json({
@@ -88,9 +99,15 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
             return;
         }
 
+        const p = product.toObject();
+        if (p.image) p.image = fixImageUrl(p.image, req);
+        if (p.images && Array.isArray(p.images)) {
+            p.images = p.images.map((img: string) => fixImageUrl(img, req));
+        }
+
         res.json({
             success: true,
-            data: product,
+            data: p,
         });
     } catch (error) {
         res.status(500).json({

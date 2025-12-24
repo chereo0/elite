@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import Order from '../models/Order';
 import { AuthRequest } from '../middleware/auth.middleware';
+import { fixImageUrl } from '../utils/urlHelper';
 
 /**
  * @desc    Get all orders (admin) or user orders
@@ -25,13 +26,27 @@ export const getOrders = async (req: AuthRequest, res: Response): Promise<void> 
 
         const total = await Order.countDocuments(query);
 
+        // Fix image URLs
+        const ordersWithFixedUrls = orders.map(order => {
+            const o = order.toObject();
+            if (o.items) {
+                o.items = o.items.map((item: any) => {
+                    if (item.product && item.product.image) {
+                        item.product.image = fixImageUrl(item.product.image, req);
+                    }
+                    return item;
+                });
+            }
+            return o;
+        });
+
         res.json({
             success: true,
             count: orders.length,
             total,
             page,
             pages: Math.ceil(total / limit),
-            data: orders,
+            data: ordersWithFixedUrls,
         });
     } catch (error) {
         res.status(500).json({
@@ -70,9 +85,19 @@ export const getOrder = async (req: AuthRequest, res: Response): Promise<void> =
             return;
         }
 
+        const o = order.toObject();
+        if (o.items) {
+            o.items = o.items.map((item: any) => {
+                if (item.product && item.product.image) {
+                    item.product.image = fixImageUrl(item.product.image, req);
+                }
+                return item;
+            });
+        }
+
         res.json({
             success: true,
-            data: order,
+            data: o,
         });
     } catch (error) {
         res.status(500).json({
