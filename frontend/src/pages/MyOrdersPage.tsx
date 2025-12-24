@@ -22,6 +22,7 @@ import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { API_URL } from '../config/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 
 interface OrderItem {
@@ -260,7 +261,7 @@ const MyOrdersPage = () => {
                                                 >
                                                     <Box
                                                         component="img"
-                                                        src={typeof item.product === 'object' ? item.product.image : ''}
+                                                        src={typeof item.product === 'object' ? getImageUrl(item.product.image) : ''}
                                                         alt={item.name}
                                                         sx={{
                                                             width: 60,

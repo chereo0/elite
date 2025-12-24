@@ -22,6 +22,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useCart } from '../contexts/CartContext';
+import { getImageUrl } from '../utils/imageHelper';
 
 const MotionCard = motion(Card);
 const MotionBox = motion(Box);
@@ -148,7 +149,7 @@ const WishlistPage = () => {
                                         <Box sx={{ position: 'relative', height: 220, overflow: 'hidden' }}>
                                             <CardMedia
                                                 component="img"
-                                                image={item.image}
+                                                image={getImageUrl(item.image)}
                                                 alt={item.name}
                                                 sx={{
                                                     width: '100%',
@@ -257,7 +258,7 @@ const WishlistPage = () => {
                                                         product: item._id,
                                                         name: item.name,
                                                         price: item.price,
-                                                        image: item.image,
+                                                        image: getImageUrl(item.image),
                                                         stock: 99,
                                                         size: randomSize,
                                                         color: randomColor,

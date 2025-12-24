@@ -53,6 +53,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Link as RouterLink } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
 import { API_URL } from '../config/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
@@ -597,7 +598,7 @@ const ViewProductsPage = () => {
                                                     <CardMedia
                                                         component="img"
                                                         height="180"
-                                                        image={product.image}
+                                                        image={getImageUrl(product.image)}
                                                         alt={product.name}
                                                         sx={{ objectFit: 'cover' }}
                                                     />

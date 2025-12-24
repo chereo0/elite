@@ -49,6 +49,7 @@ import InventoryIcon from '@mui/icons-material/Inventory';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
 import { API_URL } from '../config/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 const MotionBox = motion(Box);
 
@@ -740,7 +741,7 @@ const ViewOrdersPage = () => {
                                 >
                                     <Box
                                         component="img"
-                                        src={typeof item.product === 'object' ? item.product.image : ''}
+                                        src={typeof item.product === 'object' ? getImageUrl(item.product.image) : ''}
                                         alt={item.name}
                                         sx={{ width: 50, height: 50, borderRadius: 1, objectFit: 'cover' }}
                                     />

@@ -36,6 +36,7 @@ import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { useCart } from '../contexts/CartContext';
 import { API_URL } from '../config/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 const MotionBox = motion(Box);
 
@@ -257,7 +258,7 @@ const CartPage = () => {
                                             {/* Product Image */}
                                             <Box
                                                 component="img"
-                                                src={item.image}
+                                                src={getImageUrl(item.image)}
                                                 alt={item.name}
                                                 sx={{
                                                     width: 80,
