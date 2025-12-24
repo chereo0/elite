@@ -1,6 +1,7 @@
 import { Request, Response } from 'express';
 import User from '../models/User';
 import generateToken from '../utils/generateToken';
+import { AuthRequest } from '../middleware/auth.middleware';
 
 /**
  * @desc    Register new user
@@ -99,6 +100,108 @@ export const login = async (req: Request, res: Response): Promise<void> => {
     }
 };
 
+/**
+ * @desc    Get current user
+ * @route   GET /api/auth/me
+ * @access  Private
+ */
+export const getMe = async (req: AuthRequest, res: Response): Promise<void> => {
+    try {
+        const user = await User.findById(req.user?._id);
+
+        if (!user) {
+            res.status(404).json({
+                success: false,
+                message: 'User not found',
+            });
+            return;
+        }
+
+        res.json({
+            success: true,
+            data: {
+                _id: user._id,
+                name: user.name,
+                email: user.email,
+                role: user.role,
+            },
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error instanceof Error ? error.message : 'Unknown error',
+        });
+    }
+};
+
+/**
+ * @desc    Google Auth
+ * @route   POST /api/auth/google
+ * @access  Public
+ */
+export const googleAuth = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const { email, name, googleId } = req.body;
+
+        // Check if user exists
+        let user = await User.findOne({ email });
+
+        if (user) {
+            // User exists, log them in
+            res.json({
+                success: true,
+                data: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    token: generateToken(user._id.toString()),
+                },
+            });
+        } else {
+            // Create new user
+            // Generate a random password for Google users
+            const randomPassword = Math.random().toString(36).slice(-8) + Math.random().toString(36).slice(-8);
+            
+            user = await User.create({
+                name,
+                email,
+                password: randomPassword,
+            });
+
+            res.status(201).json({
+                success: true,
+                data: {
+                    _id: user._id,
+                    name: user.name,
+                    email: user.email,
+                    role: user.role,
+                    token: generateToken(user._id.toString()),
+                },
+            });
+        }
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error instanceof Error ? error.message : 'Unknown error',
+        });
+    }
+};
+
+/**
+ * @desc    Facebook Auth
+ * @route   POST /api/auth/facebook
+ * @access  Public
+ */
+export const facebookAuth = async (req: Request, res: Response): Promise<void> => {
+    // Placeholder for Facebook Auth
+    res.status(501).json({
+        success: false,
+        message: 'Facebook auth not implemented yet',
+    });
+};
 /**
  * @desc    Get current user profile
  * @route   GET /api/auth/me
