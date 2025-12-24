@@ -2,6 +2,11 @@ import { API_URL } from '../config/api';
 
 export const getImageUrl = (url: string | undefined): string => {
     if (!url) return '';
+
+    // If it's a data URI, return it as is
+    if (url.startsWith('data:')) {
+        return url;
+    }
     
     // If the URL is already a full URL (http/https), check if it's localhost
     if (url.startsWith('http')) {
