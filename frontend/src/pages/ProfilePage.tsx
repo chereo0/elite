@@ -14,13 +14,14 @@ import {
     IconButton,
 } from '@mui/material';
 import { motion } from 'framer-motion';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link as RouterLink } from 'react-router-dom';
 import VisibilityIcon from '@mui/icons-material/Visibility';
 import VisibilityOffIcon from '@mui/icons-material/VisibilityOff';
 import LocationOnIcon from '@mui/icons-material/LocationOn';
 import LockIcon from '@mui/icons-material/Lock';
 import SaveIcon from '@mui/icons-material/Save';
 import PersonIcon from '@mui/icons-material/Person';
+import ShoppingBagIcon from '@mui/icons-material/ShoppingBag';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
 import { API_URL } from '../config/api';
@@ -69,7 +70,7 @@ const glassCardStyles = {
     backdropFilter: 'blur(20px)',
     border: '1px solid rgba(100, 150, 255, 0.15)',
     borderRadius: 3,
-    p: { xs: 3, md: 4 },
+    p: { xs: 2.5, md: 4 },
 };
 
 const inputStyles = {
@@ -251,12 +252,19 @@ const ProfilePage = () => {
             <Navbar />
 
             <Container maxWidth="lg" sx={{ py: { xs: 4, md: 8 }, position: 'relative', zIndex: 1 }}>
-                {/* Page Title */}
+                {/* Page Title & Actions */}
                 <MotionBox
                     initial={{ opacity: 0, y: -20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ duration: 0.6 }}
-                    sx={{ textAlign: 'center', mb: { xs: 4, md: 6 } }}
+                    sx={{ 
+                        display: 'flex', 
+                        flexDirection: { xs: 'column', md: 'row' },
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        mb: { xs: 4, md: 6 },
+                        gap: 3
+                    }}
                 >
                     <Typography
                         variant="h3"
@@ -270,6 +278,27 @@ const ProfilePage = () => {
                     >
                         My Profile
                     </Typography>
+
+                    <Button
+                        component={RouterLink}
+                        to="/my-orders"
+                        variant="outlined"
+                        startIcon={<ShoppingBagIcon />}
+                        sx={{
+                            borderColor: 'rgba(124, 77, 255, 0.5)',
+                            color: '#b388ff',
+                            px: 3,
+                            py: 1,
+                            borderRadius: 2,
+                            '&:hover': {
+                                borderColor: '#7c4dff',
+                                background: 'rgba(124, 77, 255, 0.1)',
+                                color: '#d1c4e9',
+                            },
+                        }}
+                    >
+                        My Orders
+                    </Button>
                 </MotionBox>
 
                 <Grid container spacing={4} justifyContent="center">
@@ -287,12 +316,12 @@ const ProfilePage = () => {
                             <Box sx={{ textAlign: 'center', mb: 4 }}>
                                 <Avatar
                                     sx={{
-                                        width: 100,
-                                        height: 100,
+                                        width: { xs: 80, md: 100 },
+                                        height: { xs: 80, md: 100 },
                                         mx: 'auto',
                                         mb: 2,
                                         bgcolor: user.role === 'admin' ? '#ff4444' : '#7c4dff',
-                                        fontSize: '2.5rem',
+                                        fontSize: { xs: '2rem', md: '2.5rem' },
                                         fontWeight: 600,
                                     }}
                                 >

@@ -104,7 +104,14 @@ const MyOrdersPage = () => {
 
             <Container maxWidth="lg" sx={{ flexGrow: 1, py: 4 }}>
                 {/* Header */}
-                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 4, flexWrap: 'wrap', gap: 2 }}>
+                <Box sx={{ 
+                    display: 'flex', 
+                    flexDirection: { xs: 'column', md: 'row' },
+                    justifyContent: 'space-between', 
+                    alignItems: { xs: 'flex-start', md: 'center' }, 
+                    mb: 4, 
+                    gap: 3 
+                }}>
                     <Box>
                         <Typography
                             variant="h3"
@@ -114,13 +121,14 @@ const MyOrdersPage = () => {
                                 display: 'flex',
                                 alignItems: 'center',
                                 gap: 2,
+                                fontSize: { xs: '2rem', md: '3rem' },
                                 background: 'linear-gradient(135deg, #ffffff 0%, #7c4dff 100%)',
                                 WebkitBackgroundClip: 'text',
                                 WebkitTextFillColor: 'transparent',
                                 backgroundClip: 'text',
                             }}
                         >
-                            <ShoppingBagIcon sx={{ fontSize: 40, color: '#7c4dff' }} />
+                            <ShoppingBagIcon sx={{ fontSize: { xs: 32, md: 40 }, color: '#7c4dff' }} />
                             My Orders
                         </Typography>
                         <Typography sx={{ color: 'rgba(255,255,255,0.6)' }}>
@@ -201,7 +209,14 @@ const MyOrdersPage = () => {
                                 >
                                     <CardContent sx={{ p: 3 }}>
                                         {/* Order Header */}
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2, flexWrap: 'wrap', gap: 2 }}>
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            flexDirection: { xs: 'column', sm: 'row' },
+                                            justifyContent: 'space-between', 
+                                            alignItems: { xs: 'flex-start', sm: 'flex-start' }, 
+                                            mb: 2, 
+                                            gap: 2 
+                                        }}>
                                             <Box>
                                                 <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
                                                     ORDER ID
@@ -210,7 +225,7 @@ const MyOrdersPage = () => {
                                                     #{order._id.slice(-8).toUpperCase()}
                                                 </Typography>
                                             </Box>
-                                            <Box sx={{ textAlign: 'right' }}>
+                                            <Box sx={{ textAlign: { xs: 'left', sm: 'right' } }}>
                                                 <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
                                                     PLACED ON
                                                 </Typography>
@@ -223,17 +238,24 @@ const MyOrdersPage = () => {
                                         <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', my: 2 }} />
 
                                         {/* Order Items */}
-                                        <Box sx={{ display: 'flex', gap: 2, overflowX: 'auto', pb: 1 }}>
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            flexDirection: { xs: 'column', md: 'row' },
+                                            gap: 2, 
+                                            overflowX: { xs: 'visible', md: 'auto' }, 
+                                            pb: 1 
+                                        }}>
                                             {order.items.map((item, idx) => (
                                                 <Box
                                                     key={idx}
                                                     sx={{
                                                         display: 'flex',
                                                         gap: 2,
-                                                        minWidth: 250,
+                                                        minWidth: { xs: '100%', md: 250 },
                                                         background: 'rgba(0,0,0,0.2)',
                                                         borderRadius: 2,
                                                         p: 1.5,
+                                                        alignItems: 'center'
                                                     }}
                                                 >
                                                     <Box
@@ -267,7 +289,13 @@ const MyOrdersPage = () => {
                                         <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', my: 2 }} />
 
                                         {/* Order Footer */}
-                                        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: 2 }}>
+                                        <Box sx={{ 
+                                            display: 'flex', 
+                                            flexDirection: { xs: 'column', sm: 'row' },
+                                            justifyContent: 'space-between', 
+                                            alignItems: { xs: 'flex-start', sm: 'center' }, 
+                                            gap: 2 
+                                        }}>
                                             <Chip
                                                 icon={statusConfig[order.status]?.icon as React.ReactElement}
                                                 label={statusConfig[order.status]?.label || order.status}
