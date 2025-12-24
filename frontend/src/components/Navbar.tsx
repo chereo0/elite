@@ -182,6 +182,68 @@ const Navbar = () => {
                         </ListItemButton>
                     </ListItem>
                 ))}
+
+                {/* User Links for Mobile */}
+                {user && (
+                    <>
+                        <ListItem disablePadding>
+                            <ListItemButton
+                                component={Link}
+                                to="/profile"
+                                onClick={handleDrawerToggle}
+                                sx={{
+                                    textAlign: 'center',
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    mb: 1,
+                                    '&:hover': {
+                                        background: 'rgba(124, 77, 255, 0.15)',
+                                    },
+                                }}
+                            >
+                                <ListItemText
+                                    primary="Profile"
+                                    sx={{
+                                        '& .MuiTypography-root': {
+                                            fontWeight: 600,
+                                            letterSpacing: '0.15em',
+                                            textTransform: 'uppercase',
+                                            fontSize: '0.95rem',
+                                        },
+                                    }}
+                                />
+                            </ListItemButton>
+                        </ListItem>
+                        <ListItem disablePadding>
+                            <ListItemButton
+                                component={Link}
+                                to="/my-orders"
+                                onClick={handleDrawerToggle}
+                                sx={{
+                                    textAlign: 'center',
+                                    py: 1.5,
+                                    borderRadius: 2,
+                                    mb: 1,
+                                    '&:hover': {
+                                        background: 'rgba(124, 77, 255, 0.15)',
+                                    },
+                                }}
+                            >
+                                <ListItemText
+                                    primary="My Orders"
+                                    sx={{
+                                        '& .MuiTypography-root': {
+                                            fontWeight: 600,
+                                            letterSpacing: '0.15em',
+                                            textTransform: 'uppercase',
+                                            fontSize: '0.95rem',
+                                        },
+                                    }}
+                                />
+                            </ListItemButton>
+                        </ListItem>
+                    </>
+                )}
             </List>
             <Divider sx={{ borderColor: 'rgba(124, 77, 255, 0.3)', my: 2 }} />
             <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, px: 2 }}>
