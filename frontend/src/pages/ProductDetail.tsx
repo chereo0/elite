@@ -31,6 +31,7 @@ import Footer from '../components/Footer';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useCart } from '../contexts/CartContext';
 import { API_URL } from '../config/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 interface Product {
     _id: string;
@@ -115,7 +116,7 @@ const ProductDetail = () => {
             product: product._id,
             name: product.name,
             price: product.price,
-            image: product.image,
+            image: getImageUrl(product.image),
             quantity,
             size: selectedSize || undefined,
             color: selectedColor || undefined,
@@ -123,7 +124,7 @@ const ProductDetail = () => {
         });
     };
 
-    const allImages = product ? [product.image, ...(product.images || [])] : [];
+    const allImages = product ? [getImageUrl(product.image), ...(product.images || []).map(img => getImageUrl(img))] : [];
 
     if (loading) {
         return (
@@ -227,7 +228,7 @@ const ProductDetail = () => {
                                                 _id: product._id,
                                                 name: product.name,
                                                 price: product.price,
-                                                image: product.image,
+                                                image: getImageUrl(product.image),
                                                 brand: product.brand,
                                                 category: product.category,
                                             });
