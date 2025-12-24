@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import Category from '../models/Category';
+import { fixImageUrl } from '../utils/urlHelper';
 
 /**
  * @desc    Get all categories (with subcategories nested)
@@ -17,10 +18,16 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
                 .populate('parent', 'name')
                 .sort({ name: 1 });
 
+            const fixedCategories = categories.map(cat => {
+                const c = cat.toObject();
+                if (c.image) c.image = fixImageUrl(c.image, req);
+                return c;
+            });
+
             res.json({
                 success: true,
                 count: categories.length,
-                data: categories,
+                data: fixedCategories,
             });
         } else {
             // Return hierarchical structure
@@ -35,7 +42,7 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
                 _id: main._id,
                 name: main.name,
                 description: main.description,
-                image: main.image,
+                image: fixImageUrl(main.image, req),
                 createdAt: main.createdAt,
                 updatedAt: main.updatedAt,
                 subcategories: subCategories
@@ -44,7 +51,7 @@ export const getCategories = async (req: Request, res: Response): Promise<void> 
                         _id: sub._id,
                         name: sub.name,
                         description: sub.description,
-                        image: sub.image,
+                        image: fixImageUrl(sub.image, req),
                         parent: sub.parent,
                         createdAt: sub.createdAt,
                         updatedAt: sub.updatedAt,
@@ -86,11 +93,20 @@ export const getCategory = async (req: Request, res: Response): Promise<void> =>
         // Get subcategories
         const subcategories = await Category.find({ parent: category._id });
 
+        const cat = category.toObject();
+        if (cat.image) cat.image = fixImageUrl(cat.image, req);
+
+        const fixedSubcategories = subcategories.map(sub => {
+            const s = sub.toObject();
+            if (s.image) s.image = fixImageUrl(s.image, req);
+            return s;
+        });
+
         res.json({
             success: true,
             data: {
-                ...category.toObject(),
-                subcategories,
+                ...cat,
+                subcategories: fixedSubcategories,
             },
         });
     } catch (error) {
