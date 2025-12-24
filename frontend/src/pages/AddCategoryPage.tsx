@@ -57,6 +57,7 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import { Link as RouterLink } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
 import { API_URL } from '../config/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 const MotionBox = motion(Box);
 
@@ -823,7 +824,7 @@ const AddCategoryPage = () => {
                                         >
                                             <CardMedia
                                                 component="img"
-                                                image={formData.image}
+                                                image={getImageUrl(formData.image)}
                                                 alt="Category preview"
                                                 sx={{ width: '100%', height: '100%', objectFit: 'cover' }}
                                                 onError={(e: any) => {

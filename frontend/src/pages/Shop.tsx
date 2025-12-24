@@ -46,6 +46,7 @@ import Footer from '../components/Footer';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useCart } from '../contexts/CartContext';
 import { API_URL } from '../config/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 interface Subcategory {
     _id: string;
@@ -517,7 +518,7 @@ const Shop = () => {
                                                 <Box sx={{ position: 'relative', height: 280, overflow: 'hidden' }}>
                                                     <CardMedia
                                                         component="img"
-                                                        image={product.image}
+                                                        image={getImageUrl(product.image)}
                                                         alt={product.name}
                                                         sx={{
                                                             width: '100%',
@@ -536,7 +537,7 @@ const Shop = () => {
                                                                     _id: product._id,
                                                                     name: product.name,
                                                                     price: product.price,
-                                                                    image: product.image,
+                                                                    image: getImageUrl(product.image),
                                                                     brand: product.brand,
                                                                     category: product.category,
                                                                 });

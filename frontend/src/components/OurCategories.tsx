@@ -11,6 +11,7 @@ import ArrowForwardIcon from '@mui/icons-material/ArrowForward';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
 import { API_URL } from '../config/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 interface Subcategory {
     _id: string;
@@ -77,7 +78,7 @@ const OurCategories = () => {
     const getCategoryImage = (category: Category) => {
         // Use category image from database if available, otherwise use fallback
         if (category.image) {
-            return category.image;
+            return getImageUrl(category.image);
         }
         return categoryImages[category.name] || categoryImages['default'];
     };
