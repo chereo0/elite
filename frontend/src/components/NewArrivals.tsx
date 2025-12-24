@@ -19,6 +19,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { motion } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
 import { API_URL } from '../config/api';
+import { getImageUrl } from '../utils/imageHelper';
 
 
 interface Product {
@@ -227,7 +228,7 @@ const NewArrivals = () => {
                                             <Box sx={{ position: 'relative', overflow: 'hidden', height: 280 }}>
                                                 <CardMedia
                                                     component="img"
-                                                    image={product.image}
+                                                    image={getImageUrl(product.image)}
                                                     alt={product.name}
                                                     className="product-image"
                                                     sx={{
