@@ -40,6 +40,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
+import DeleteIcon from '@mui/icons-material/Delete';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
@@ -123,7 +124,8 @@ const sidebarItems = [
     { icon: <PeopleIcon />, label: 'View Users', path: '/admin/users' },
 ];
 
-const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const availableClothingSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+const availableShoeSizes = ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
 const availableColors = ['Black', 'White', 'Navy', 'Gray', 'Red', 'Blue', 'Green', 'Brown', 'Beige'];
 
 interface Subcategory {
@@ -152,6 +154,7 @@ const AddProductPage = () => {
     const [stars] = useState(() => generateStars(60));
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
+    const [additionalImages, setAdditionalImages] = useState<string[]>([]);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -173,6 +176,7 @@ const AddProductPage = () => {
         image: '',
     });
     const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
+    const [sizeType, setSizeType] = useState<'clothing' | 'shoes'>('clothing');
     const [selectedColors, setSelectedColors] = useState<string[]>([]);
 
     // Form submission state
@@ -229,6 +233,29 @@ const AddProductPage = () => {
         }
     };
 
+    const handleAdditionalImagesUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (files) {
+            Array.from(files).forEach((file) => {
+                const reader = new FileReader();
+                reader.onloadend = () => {
+                    const base64 = reader.result as string;
+                    setAdditionalImages((prev) => [...prev, base64]);
+                };
+                reader.readAsDataURL(file);
+            });
+        }
+    };
+
+    const handleRemoveAdditionalImage = (index: number) => {
+        setAdditionalImages((prev) => prev.filter((_, i) => i !== index));
+    };
+
+    const handleSizeTypeChange = (newSizeType: 'clothing' | 'shoes') => {
+        setSizeType(newSizeType);
+        setSelectedSizes([]); // Reset sizes when type changes
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setError('');
@@ -263,8 +290,10 @@ const AddProductPage = () => {
                     price: parseFloat(formData.price),
                     category: formData.category,
                     image: formData.image,
+                    images: additionalImages,
                     stock: parseInt(formData.stock),
                     sizes: selectedSizes,
+                    sizeType: sizeType,
                     colors: selectedColors,
                 }),
             });
@@ -288,8 +317,10 @@ const AddProductPage = () => {
                 image: '',
             });
             setSelectedSizes([]);
+            setSizeType('clothing');
             setSelectedColors([]);
             setImagePreview(null);
+            setAdditionalImages([]);
 
             // Redirect after delay
             setTimeout(() => {
@@ -558,6 +589,87 @@ const AddProductPage = () => {
                                             </>
                                         )}
                                     </Box>
+
+                                    {/* Additional Images Upload */}
+                                    <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.7)', mt: 3, mb: 2 }}>
+                                        Additional Images (for product gallery)
+                                    </Typography>
+                                    <Box
+                                        sx={{
+                                            width: '100%',
+                                            minHeight: 80,
+                                            border: '2px dashed rgba(30, 144, 255, 0.3)',
+                                            borderRadius: 2,
+                                            display: 'flex',
+                                            flexDirection: 'column',
+                                            alignItems: 'center',
+                                            justifyContent: 'center',
+                                            cursor: 'pointer',
+                                            p: 2,
+                                            background: 'rgba(30, 144, 255, 0.05)',
+                                            transition: 'all 0.3s ease',
+                                            '&:hover': {
+                                                borderColor: '#1e90ff',
+                                                background: 'rgba(30, 144, 255, 0.1)',
+                                            },
+                                        }}
+                                        component="label"
+                                    >
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            multiple
+                                            hidden
+                                            onChange={handleAdditionalImagesUpload}
+                                        />
+                                        <AddPhotoAlternateIcon sx={{ fontSize: 30, color: 'rgba(30, 144, 255, 0.5)', mb: 0.5 }} />
+                                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)' }}>
+                                            Click to add more images
+                                        </Typography>
+                                    </Box>
+
+                                    {/* Additional Images Preview */}
+                                    {additionalImages.length > 0 && (
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
+                                            {additionalImages.map((img, index) => (
+                                                <Box
+                                                    key={index}
+                                                    sx={{
+                                                        position: 'relative',
+                                                        width: 70,
+                                                        height: 70,
+                                                        borderRadius: 1,
+                                                        overflow: 'hidden',
+                                                        border: '1px solid rgba(30, 144, 255, 0.3)',
+                                                    }}
+                                                >
+                                                    <img
+                                                        src={img}
+                                                        alt={`Additional ${index + 1}`}
+                                                        style={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            objectFit: 'cover',
+                                                        }}
+                                                    />
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => handleRemoveAdditionalImage(index)}
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: 2,
+                                                            right: 2,
+                                                            background: 'rgba(0,0,0,0.6)',
+                                                            padding: '2px',
+                                                            '&:hover': { background: 'rgba(255,0,0,0.6)' },
+                                                        }}
+                                                    >
+                                                        <DeleteIcon sx={{ fontSize: 14, color: 'white' }} />
+                                                    </IconButton>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    )}
                                 </Grid>
 
                                 {/* Form Fields */}
@@ -662,15 +774,56 @@ const AddProductPage = () => {
                                             />
                                         </Grid>
 
+                                        {/* Size Type Toggle */}
+                                        <Grid item xs={12} sm={6}>
+                                            <Typography variant="subtitle2" sx={{ color: 'rgba(255,255,255,0.7)', mb: 1 }}>
+                                                Size Type
+                                            </Typography>
+                                            <Box sx={{ display: 'flex', gap: 1 }}>
+                                                <Button
+                                                    variant={sizeType === 'clothing' ? 'contained' : 'outlined'}
+                                                    onClick={() => handleSizeTypeChange('clothing')}
+                                                    sx={{
+                                                        flex: 1,
+                                                        borderColor: 'rgba(30, 144, 255, 0.3)',
+                                                        color: sizeType === 'clothing' ? 'white' : 'rgba(255,255,255,0.7)',
+                                                        background: sizeType === 'clothing' ? 'rgba(30, 144, 255, 0.3)' : 'transparent',
+                                                        '&:hover': {
+                                                            borderColor: '#1e90ff',
+                                                            background: 'rgba(30, 144, 255, 0.2)',
+                                                        },
+                                                    }}
+                                                >
+                                                    Clothes/Jeans
+                                                </Button>
+                                                <Button
+                                                    variant={sizeType === 'shoes' ? 'contained' : 'outlined'}
+                                                    onClick={() => handleSizeTypeChange('shoes')}
+                                                    sx={{
+                                                        flex: 1,
+                                                        borderColor: 'rgba(30, 144, 255, 0.3)',
+                                                        color: sizeType === 'shoes' ? 'white' : 'rgba(255,255,255,0.7)',
+                                                        background: sizeType === 'shoes' ? 'rgba(30, 144, 255, 0.3)' : 'transparent',
+                                                        '&:hover': {
+                                                            borderColor: '#1e90ff',
+                                                            background: 'rgba(30, 144, 255, 0.2)',
+                                                        },
+                                                    }}
+                                                >
+                                                    Shoes
+                                                </Button>
+                                            </Box>
+                                        </Grid>
+
                                         {/* Sizes */}
                                         <Grid item xs={12} sm={6}>
                                             <FormControl fullWidth sx={inputStyles}>
-                                                <InputLabel>Sizes</InputLabel>
+                                                <InputLabel>{sizeType === 'shoes' ? 'Shoe Sizes' : 'Clothing Sizes'}</InputLabel>
                                                 <Select
                                                     multiple
                                                     value={selectedSizes}
                                                     onChange={(e) => setSelectedSizes(e.target.value as string[])}
-                                                    input={<OutlinedInput label="Sizes" />}
+                                                    input={<OutlinedInput label={sizeType === 'shoes' ? 'Shoe Sizes' : 'Clothing Sizes'} />}
                                                     renderValue={(selected) => (
                                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
                                                             {selected.map((value) => (
@@ -679,7 +832,7 @@ const AddProductPage = () => {
                                                         </Box>
                                                     )}
                                                 >
-                                                    {availableSizes.map((size) => (
+                                                    {(sizeType === 'shoes' ? availableShoeSizes : availableClothingSizes).map((size) => (
                                                         <MenuItem key={size} value={size}>
                                                             <Checkbox checked={selectedSizes.includes(size)} sx={{ color: 'rgba(30, 144, 255, 0.5)' }} />
                                                             <MuiListItemText primary={size} />

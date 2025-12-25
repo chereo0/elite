@@ -125,7 +125,7 @@ export const getProduct = async (req: Request, res: Response): Promise<void> => 
  */
 export const createProduct = async (req: Request, res: Response): Promise<void> => {
     try {
-        const { name, description, brand, price, category, image, images, stock, sizes, colors } = req.body;
+        const { name, description, brand, price, category, image, images, stock, sizes, sizeType, colors } = req.body;
 
         const product = await Product.create({
             name,
@@ -137,6 +137,7 @@ export const createProduct = async (req: Request, res: Response): Promise<void> 
             images,
             stock,
             sizes,
+            sizeType,
             colors,
         });
 

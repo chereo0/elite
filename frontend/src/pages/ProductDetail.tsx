@@ -44,6 +44,7 @@ interface Product {
     category: { _id: string; name: string } | string;
     stock: number;
     sizes?: string[];
+    sizeType?: 'clothing' | 'shoes';
     colors?: string[];
     createdAt: string;
 }
@@ -360,7 +361,7 @@ const ProductDetail = () => {
                             {product.sizes && product.sizes.length > 0 && (
                                 <Box sx={{ mb: 4 }}>
                                     <Typography variant="subtitle2" sx={{ mb: 2, fontWeight: 600, letterSpacing: '0.1em' }}>
-                                        SIZE
+                                        {product.sizeType === 'shoes' ? 'SHOE SIZE' : 'SIZE'}
                                     </Typography>
                                     <ToggleButtonGroup
                                         value={selectedSize}
