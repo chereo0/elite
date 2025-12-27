@@ -51,6 +51,25 @@ interface Product {
 
 const MotionBox = motion(Box);
 
+// Color hex values for preview
+const colorHexMap: { [key: string]: string } = {
+    'Black': '#000000', 'White': '#FFFFFF', 'Navy': '#001F3F', 'Gray': '#808080',
+    'Red': '#FF0000', 'Blue': '#0000FF', 'Green': '#008000', 'Brown': '#8B4513',
+    'Beige': '#F5F5DC', 'Pink': '#FFC0CB', 'Purple': '#800080', 'Orange': '#FFA500',
+    'Yellow': '#FFFF00', 'Teal': '#008080', 'Maroon': '#800000', 'Olive': '#808000',
+    'Coral': '#FF7F50', 'Turquoise': '#40E0D0', 'Gold': '#FFD700', 'Silver': '#C0C0C0',
+    'Cream': '#FFFDD0', 'Burgundy': '#800020', 'Khaki': '#C3B091', 'Charcoal': '#36454F'
+};
+
+// Get color preview for display
+const getColorPreview = (colorName: string): string[] => {
+    if (colorName.includes(' & ')) {
+        const parts = colorName.split(' & ');
+        return parts.map(p => colorHexMap[p] || '#CCCCCC');
+    }
+    return [colorHexMap[colorName] || colorName.toLowerCase()];
+};
+
 const ProductDetail = () => {
     const { id } = useParams<{ id: string }>();
     const [product, setProduct] = useState<Product | null>(null);
@@ -402,30 +421,36 @@ const ProductDetail = () => {
                                         COLOR
                                     </Typography>
                                     <Box sx={{ display: 'flex', gap: 1.5, flexWrap: 'wrap' }}>
-                                        {product.colors.map((color) => (
-                                            <Box
-                                                key={color}
-                                                onClick={() => setSelectedColor(color)}
-                                                sx={{
-                                                    width: 40,
-                                                    height: 40,
-                                                    borderRadius: '50%',
-                                                    background: color.toLowerCase(),
-                                                    cursor: 'pointer',
-                                                    border: selectedColor === color
-                                                        ? '3px solid #7c4dff'
-                                                        : '3px solid transparent',
-                                                    boxShadow: selectedColor === color
-                                                        ? '0 0 0 2px rgba(124, 77, 255, 0.5)'
-                                                        : 'none',
-                                                    transition: 'all 0.2s ease',
-                                                    '&:hover': {
-                                                        transform: 'scale(1.1)',
-                                                    },
-                                                }}
-                                                title={color}
-                                            />
-                                        ))}
+                                        {product.colors.map((color) => {
+                                            const colors = getColorPreview(color);
+                                            const isMixed = colors.length > 1;
+                                            return (
+                                                <Box
+                                                    key={color}
+                                                    onClick={() => setSelectedColor(color)}
+                                                    sx={{
+                                                        width: 40,
+                                                        height: 40,
+                                                        borderRadius: '50%',
+                                                        background: isMixed
+                                                            ? `linear-gradient(135deg, ${colors[0]} 50%, ${colors[1]} 50%)`
+                                                            : colors[0],
+                                                        cursor: 'pointer',
+                                                        border: selectedColor === color
+                                                            ? '3px solid #7c4dff'
+                                                            : '3px solid rgba(255,255,255,0.3)',
+                                                        boxShadow: selectedColor === color
+                                                            ? '0 0 0 2px rgba(124, 77, 255, 0.5)'
+                                                            : 'none',
+                                                        transition: 'all 0.2s ease',
+                                                        '&:hover': {
+                                                            transform: 'scale(1.1)',
+                                                        },
+                                                    }}
+                                                    title={color}
+                                                />
+                                            );
+                                        })}
                                     </Box>
                                     {selectedColor && (
                                         <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', mt: 1, display: 'block' }}>
