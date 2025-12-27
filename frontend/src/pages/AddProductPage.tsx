@@ -27,6 +27,8 @@ import {
     Checkbox,
     ListItemText as MuiListItemText,
     OutlinedInput,
+    Autocomplete,
+    Paper,
 } from '@mui/material';
 import { motion } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -42,6 +44,8 @@ import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import AddPhotoAlternateIcon from '@mui/icons-material/AddPhotoAlternate';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AttachMoneyIcon from '@mui/icons-material/AttachMoney';
+import SearchIcon from '@mui/icons-material/Search';
+import PaletteIcon from '@mui/icons-material/Palette';
 import InventoryIcon from '@mui/icons-material/Inventory';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Link as RouterLink } from 'react-router-dom';
@@ -126,7 +130,53 @@ const sidebarItems = [
 
 const availableClothingSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const availableShoeSizes = ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
-const availableColors = ['Black', 'White', 'Navy', 'Gray', 'Red', 'Blue', 'Green', 'Brown', 'Beige'];
+
+// Single colors
+const singleColors = [
+    'Black', 'White', 'Navy', 'Gray', 'Red', 'Blue', 'Green', 'Brown', 'Beige',
+    'Pink', 'Purple', 'Orange', 'Yellow', 'Teal', 'Maroon', 'Olive', 'Coral',
+    'Turquoise', 'Gold', 'Silver', 'Cream', 'Burgundy', 'Khaki', 'Charcoal'
+];
+
+// Mixed/Combined colors
+const mixedColors = [
+    'Black & White', 'White & Black', 'Black & Red', 'Black & Blue', 'Black & Gold',
+    'White & Blue', 'White & Red', 'White & Green', 'White & Pink', 'White & Navy',
+    'Navy & White', 'Navy & Red', 'Navy & Gold', 'Navy & Gray',
+    'Red & White', 'Red & Black', 'Red & Blue', 'Red & Gold',
+    'Blue & White', 'Blue & Black', 'Blue & Red', 'Blue & Yellow',
+    'Green & White', 'Green & Black', 'Green & Gold', 'Green & Yellow',
+    'Gray & White', 'Gray & Black', 'Gray & Blue', 'Gray & Red',
+    'Pink & White', 'Pink & Black', 'Pink & Gray',
+    'Brown & Beige', 'Brown & White', 'Brown & Gold',
+    'Purple & White', 'Purple & Black', 'Purple & Gold',
+    'Orange & Black', 'Orange & White', 'Orange & Blue',
+    'Yellow & Black', 'Yellow & White', 'Yellow & Blue',
+    'Teal & White', 'Teal & Black', 'Teal & Gold',
+    'Gold & Black', 'Gold & White', 'Silver & Black', 'Silver & White'
+];
+
+// All available colors (single + mixed)
+const availableColors = [...singleColors, ...mixedColors];
+
+// Color hex values for preview
+const colorHexMap: { [key: string]: string | string[] } = {
+    'Black': '#000000', 'White': '#FFFFFF', 'Navy': '#001F3F', 'Gray': '#808080',
+    'Red': '#FF0000', 'Blue': '#0000FF', 'Green': '#008000', 'Brown': '#8B4513',
+    'Beige': '#F5F5DC', 'Pink': '#FFC0CB', 'Purple': '#800080', 'Orange': '#FFA500',
+    'Yellow': '#FFFF00', 'Teal': '#008080', 'Maroon': '#800000', 'Olive': '#808000',
+    'Coral': '#FF7F50', 'Turquoise': '#40E0D0', 'Gold': '#FFD700', 'Silver': '#C0C0C0',
+    'Cream': '#FFFDD0', 'Burgundy': '#800020', 'Khaki': '#C3B091', 'Charcoal': '#36454F'
+};
+
+// Get color preview for display
+const getColorPreview = (colorName: string): string[] => {
+    if (colorName.includes(' & ')) {
+        const parts = colorName.split(' & ');
+        return parts.map(p => colorHexMap[p] as string || '#CCCCCC');
+    }
+    return [colorHexMap[colorName] as string || '#CCCCCC'];
+};
 
 interface Subcategory {
     _id: string;
@@ -842,31 +892,148 @@ const AddProductPage = () => {
                                             </FormControl>
                                         </Grid>
 
-                                        {/* Colors */}
+                                        {/* Colors with Search */}
                                         <Grid item xs={12}>
-                                            <FormControl fullWidth sx={inputStyles}>
-                                                <InputLabel>Colors</InputLabel>
-                                                <Select
-                                                    multiple
-                                                    value={selectedColors}
-                                                    onChange={(e) => setSelectedColors(e.target.value as string[])}
-                                                    input={<OutlinedInput label="Colors" />}
-                                                    renderValue={(selected) => (
-                                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 0.5 }}>
-                                                            {selected.map((value) => (
-                                                                <Chip key={value} label={value} size="small" sx={{ bgcolor: 'rgba(30, 144, 255, 0.2)', color: 'white' }} />
-                                                            ))}
-                                                        </Box>
-                                                    )}
-                                                >
-                                                    {availableColors.map((color) => (
-                                                        <MenuItem key={color} value={color}>
-                                                            <Checkbox checked={selectedColors.includes(color)} sx={{ color: 'rgba(30, 144, 255, 0.5)' }} />
-                                                            <MuiListItemText primary={color} />
-                                                        </MenuItem>
-                                                    ))}
-                                                </Select>
-                                            </FormControl>
+                                            <Autocomplete
+                                                multiple
+                                                options={availableColors}
+                                                value={selectedColors}
+                                                onChange={(_, newValue) => setSelectedColors(newValue)}
+                                                groupBy={(option) => option.includes(' & ') ? 'Mixed Colors' : 'Single Colors'}
+                                                filterOptions={(options, { inputValue }) => {
+                                                    const filterValue = inputValue.toLowerCase();
+                                                    return options.filter(option =>
+                                                        option.toLowerCase().includes(filterValue)
+                                                    );
+                                                }}
+                                                PaperComponent={(props) => (
+                                                    <Paper
+                                                        {...props}
+                                                        sx={{
+                                                            background: 'rgba(10, 15, 30, 0.95)',
+                                                            backdropFilter: 'blur(20px)',
+                                                            border: '1px solid rgba(30, 144, 255, 0.3)',
+                                                            '& .MuiAutocomplete-groupLabel': {
+                                                                background: 'rgba(30, 144, 255, 0.15)',
+                                                                color: '#1e90ff',
+                                                                fontWeight: 600,
+                                                            },
+                                                            '& .MuiAutocomplete-option': {
+                                                                color: 'white',
+                                                                '&:hover': {
+                                                                    background: 'rgba(30, 144, 255, 0.1)',
+                                                                },
+                                                                '&[aria-selected="true"]': {
+                                                                    background: 'rgba(30, 144, 255, 0.2)',
+                                                                },
+                                                            },
+                                                        }}
+                                                    />
+                                                )}
+                                                renderOption={(props, option, { selected }) => {
+                                                    const colors = getColorPreview(option);
+                                                    return (
+                                                        <li {...props}>
+                                                            <Checkbox
+                                                                checked={selected}
+                                                                sx={{ color: 'rgba(30, 144, 255, 0.5)', mr: 1 }}
+                                                            />
+                                                            <Box sx={{ display: 'flex', alignItems: 'center', gap: 1 }}>
+                                                                {colors.length === 1 ? (
+                                                                    <Box
+                                                                        sx={{
+                                                                            width: 20,
+                                                                            height: 20,
+                                                                            borderRadius: '50%',
+                                                                            bgcolor: colors[0],
+                                                                            border: '2px solid rgba(255,255,255,0.3)',
+                                                                        }}
+                                                                    />
+                                                                ) : (
+                                                                    <Box
+                                                                        sx={{
+                                                                            width: 20,
+                                                                            height: 20,
+                                                                            borderRadius: '50%',
+                                                                            background: `linear-gradient(135deg, ${colors[0]} 50%, ${colors[1]} 50%)`,
+                                                                            border: '2px solid rgba(255,255,255,0.3)',
+                                                                        }}
+                                                                    />
+                                                                )}
+                                                                <Typography sx={{ color: 'white' }}>{option}</Typography>
+                                                            </Box>
+                                                        </li>
+                                                    );
+                                                }}
+                                                renderTags={(value, getTagProps) =>
+                                                    value.map((option, index) => {
+                                                        const colors = getColorPreview(option);
+                                                        return (
+                                                            <Chip
+                                                                {...getTagProps({ index })}
+                                                                key={option}
+                                                                label={
+                                                                    <Box sx={{ display: 'flex', alignItems: 'center', gap: 0.5 }}>
+                                                                        {colors.length === 1 ? (
+                                                                            <Box
+                                                                                sx={{
+                                                                                    width: 12,
+                                                                                    height: 12,
+                                                                                    borderRadius: '50%',
+                                                                                    bgcolor: colors[0],
+                                                                                    border: '1px solid rgba(255,255,255,0.3)',
+                                                                                }}
+                                                                            />
+                                                                        ) : (
+                                                                            <Box
+                                                                                sx={{
+                                                                                    width: 12,
+                                                                                    height: 12,
+                                                                                    borderRadius: '50%',
+                                                                                    background: `linear-gradient(135deg, ${colors[0]} 50%, ${colors[1]} 50%)`,
+                                                                                    border: '1px solid rgba(255,255,255,0.3)',
+                                                                                }}
+                                                                            />
+                                                                        )}
+                                                                        {option}
+                                                                    </Box>
+                                                                }
+                                                                size="small"
+                                                                sx={{
+                                                                    bgcolor: 'rgba(30, 144, 255, 0.2)',
+                                                                    color: 'white',
+                                                                    '& .MuiChip-deleteIcon': {
+                                                                        color: 'rgba(255,255,255,0.5)',
+                                                                        '&:hover': { color: 'white' },
+                                                                    },
+                                                                }}
+                                                            />
+                                                        );
+                                                    })
+                                                }
+                                                renderInput={(params) => (
+                                                    <TextField
+                                                        {...params}
+                                                        label="Colors"
+                                                        placeholder="Search colors..."
+                                                        sx={inputStyles}
+                                                        InputProps={{
+                                                            ...params.InputProps,
+                                                            startAdornment: (
+                                                                <>
+                                                                    <InputAdornment position="start">
+                                                                        <PaletteIcon sx={{ color: 'rgba(255,255,255,0.5)', ml: 1 }} />
+                                                                    </InputAdornment>
+                                                                    {params.InputProps.startAdornment}
+                                                                </>
+                                                            ),
+                                                        }}
+                                                    />
+                                                )}
+                                            />
+                                            <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', mt: 0.5, display: 'block' }}>
+                                                Type to search • Select single colors or mixed combinations
+                                            </Typography>
                                         </Grid>
 
                                         {/* Description */}
