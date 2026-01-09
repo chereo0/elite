@@ -30,7 +30,8 @@ export const getProducts = async (req, res) => {
       .populate('category', 'name')
       .skip(skip)
       .limit(limit)
-      .sort({ createdAt: -1 });
+      .sort({ createdAt: -1 })
+      .allowDiskUse(true);
 
     const total = await Product.countDocuments(query);
 
