@@ -47,7 +47,8 @@ export const getProducts = async (req, res) => {
       data: products,
     });
   } catch (err) {
-    return res.status(500).json({ success: false, message: 'Server error' });
+    console.error('getProducts error:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Server error' });
   }
 };
 
@@ -61,7 +62,8 @@ export const getProduct = async (req, res) => {
 
     return res.json({ success: true, data: product });
   } catch (err) {
-    return res.status(500).json({ success: false, message: 'Server error' });
+    console.error('getProduct error:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Server error' });
   }
 };
 
