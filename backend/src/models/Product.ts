@@ -10,7 +10,7 @@ export interface IProduct extends Document {
     images?: string[];
     stock: number;
     sizes?: string[];
-    sizeType?: 'clothing' | 'shoes';
+    sizeType?: 'clothing' | 'shoes' | 'none';
     colors?: string[];
     createdAt: Date;
     updatedAt: Date;
@@ -64,7 +64,6 @@ const productSchema = new Schema<IProduct>(
         ],
         sizeType: {
             type: String,
-            enum: ['clothing', 'shoes'],
             default: 'clothing',
         },
         colors: [
