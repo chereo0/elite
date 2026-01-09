@@ -1,4 +1,3 @@
-import { Router } from 'express';
 import { getOrders, getOrder, createOrder, updateOrderStatus, deleteOrder } from '../controllers/orderController.js';
 import { protect } from '../middleware/auth.js';
 import { admin } from '../middleware/admin.js';

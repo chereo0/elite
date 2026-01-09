@@ -67,7 +67,7 @@ export const getProduct = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, brand, price, category, image, images, stock, sizes, colors } = req.body;
+    const { name, description, brand, price, category, image, images, stock, sizeType, sizes, colors } = req.body;
 
     const product = await Product.create({
       name,
@@ -78,13 +78,15 @@ export const createProduct = async (req, res) => {
       image,
       images,
       stock,
+      sizeType,
       sizes,
       colors,
     });
 
     return res.status(201).json({ success: true, data: product });
   } catch (err) {
-    return res.status(500).json({ success: false, message: 'Server error' });
+    console.error('Create product error:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Server error' });
   }
 };
 
