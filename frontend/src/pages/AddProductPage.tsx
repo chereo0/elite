@@ -204,7 +204,10 @@ const AddProductPage = () => {
     const [stars] = useState(() => generateStars(60));
     const [sidebarOpen, setSidebarOpen] = useState(false);
     const [imagePreview, setImagePreview] = useState<string | null>(null);
-    const [additionalImages, setAdditionalImages] = useState<string[]>([]);
+    const [additionalImagePreviews, setAdditionalImagePreviews] = useState<string[]>([]);
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [additionalImageFiles, setAdditionalImageFiles] = useState<File[]>([]);
+    const [uploadProgress, setUploadProgress] = useState(0);
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
@@ -273,32 +276,27 @@ const AddProductPage = () => {
     const handleImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const file = event.target.files?.[0];
         if (file) {
-            const reader = new FileReader();
-            reader.onloadend = () => {
-                const base64 = reader.result as string;
-                setImagePreview(base64);
-                setFormData((prev) => ({ ...prev, image: base64 }));
-            };
-            reader.readAsDataURL(file);
+            setImageFile(file);
+            // Create preview URL
+            const previewUrl = URL.createObjectURL(file);
+            setImagePreview(previewUrl);
         }
     };
 
     const handleAdditionalImagesUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
         const files = event.target.files;
         if (files) {
-            Array.from(files).forEach((file) => {
-                const reader = new FileReader();
-                reader.onloadend = () => {
-                    const base64 = reader.result as string;
-                    setAdditionalImages((prev) => [...prev, base64]);
-                };
-                reader.readAsDataURL(file);
-            });
+            const newFiles = Array.from(files);
+            setAdditionalImageFiles(prev => [...prev, ...newFiles]);
+            // Create preview URLs
+            const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+            setAdditionalImagePreviews(prev => [...prev, ...newPreviews]);
         }
     };
 
     const handleRemoveAdditionalImage = (index: number) => {
-        setAdditionalImages((prev) => prev.filter((_, i) => i !== index));
+        setAdditionalImageFiles(prev => prev.filter((_, i) => i !== index));
+        setAdditionalImagePreviews(prev => prev.filter((_, i) => i !== index));
     };
 
     const handleSizeTypeChange = (newSizeType: 'clothing' | 'shoes') => {
@@ -311,6 +309,7 @@ const AddProductPage = () => {
         setError('');
         setSuccess('');
         setLoading(true);
+        setUploadProgress(0);
 
         // Validation
         if (!formData.name || !formData.category || !formData.price || !formData.stock || !formData.description) {
@@ -319,7 +318,7 @@ const AddProductPage = () => {
             return;
         }
 
-        if (!formData.image) {
+        if (!imageFile) {
             setError('Please upload a product image');
             setLoading(false);
             return;
@@ -327,6 +326,54 @@ const AddProductPage = () => {
 
         try {
             const token = localStorage.getItem('token');
+            
+            // Step 1: Upload main image
+            setUploadProgress(10);
+            const mainImageFormData = new FormData();
+            mainImageFormData.append('image', imageFile);
+            
+            const mainImageResponse = await fetch(`${API_URL}/upload`, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `Bearer ${token}`,
+                },
+                body: mainImageFormData,
+            });
+            
+            if (!mainImageResponse.ok) {
+                throw new Error('Failed to upload main image');
+            }
+            
+            const mainImageData = await mainImageResponse.json();
+            const mainImageUrl = mainImageData.data.url;
+            setUploadProgress(40);
+            
+            // Step 2: Upload additional images
+            const additionalImageUrls: string[] = [];
+            if (additionalImageFiles.length > 0) {
+                for (let i = 0; i < additionalImageFiles.length; i++) {
+                    const additionalFormData = new FormData();
+                    additionalFormData.append('image', additionalImageFiles[i]);
+                    
+                    const additionalResponse = await fetch(`${API_URL}/upload`, {
+                        method: 'POST',
+                        headers: {
+                            'Authorization': `Bearer ${token}`,
+                        },
+                        body: additionalFormData,
+                    });
+                    
+                    if (additionalResponse.ok) {
+                        const additionalData = await additionalResponse.json();
+                        additionalImageUrls.push(additionalData.data.url);
+                    }
+                    setUploadProgress(40 + ((i + 1) / additionalImageFiles.length) * 30);
+                }
+            } else {
+                setUploadProgress(70);
+            }
+            
+            // Step 3: Create product with image URLs
             const response = await fetch(`${API_URL}/products`, {
                 method: 'POST',
                 headers: {
@@ -339,8 +386,8 @@ const AddProductPage = () => {
                     brand: formData.brand,
                     price: parseFloat(formData.price),
                     category: formData.category,
-                    image: formData.image,
-                    images: additionalImages,
+                    image: mainImageUrl,
+                    images: additionalImageUrls,
                     stock: parseInt(formData.stock),
                     sizes: selectedSizes,
                     sizeType: sizeType,
@@ -348,12 +395,14 @@ const AddProductPage = () => {
                 }),
             });
 
+            setUploadProgress(90);
             const data = await response.json();
 
             if (!response.ok) {
                 throw new Error(data.message || 'Failed to create product');
             }
 
+            setUploadProgress(100);
             setSuccess('Product created successfully!');
 
             // Reset form
@@ -370,7 +419,9 @@ const AddProductPage = () => {
             setSizeType('clothing');
             setSelectedColors([]);
             setImagePreview(null);
-            setAdditionalImages([]);
+            setImageFile(null);
+            setAdditionalImageFiles([]);
+            setAdditionalImagePreviews([]);
 
             // Redirect after delay
             setTimeout(() => {
@@ -380,6 +431,7 @@ const AddProductPage = () => {
             setError(err instanceof Error ? err.message : 'Failed to create product');
         } finally {
             setLoading(false);
+            setUploadProgress(0);
         }
     };
 
@@ -679,9 +731,9 @@ const AddProductPage = () => {
                                     </Box>
 
                                     {/* Additional Images Preview */}
-                                    {additionalImages.length > 0 && (
+                                    {additionalImagePreviews.length > 0 && (
                                         <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1, mt: 2 }}>
-                                            {additionalImages.map((img, index) => (
+                                            {additionalImagePreviews.map((img, index) => (
                                                 <Box
                                                     key={index}
                                                     sx={{

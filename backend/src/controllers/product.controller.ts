@@ -2,8 +2,26 @@ import { Request, Response } from 'express';
 import Product from '../models/Product';
 import { fixImageUrl } from '../utils/urlHelper';
 
+// Helper to check if a string is base64 (large image data)
+const isBase64Image = (str: string): boolean => {
+    return str && (str.startsWith('data:image/') || str.length > 1000);
+};
+
+// Helper to get optimized image URL (truncate base64 for listings)
+const getOptimizedImageUrl = (url: string, req: Request, forListing: boolean = false): string => {
+    if (!url) return url;
+    
+    // If it's base64 and we're optimizing for listing, return a placeholder or thumbnail indicator
+    if (forListing && isBase64Image(url)) {
+        // Return only the first part to indicate it's base64, frontend will handle it
+        return url.substring(0, 100) + '...';
+    }
+    
+    return fixImageUrl(url, req);
+};
+
 /**
- * @desc    Get all products
+ * @desc    Get all products (optimized for listing - excludes large base64 images)
  * @route   GET /api/products
  * @access  Public
  */
@@ -12,6 +30,7 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 12;
         const skip = (page - 1) * limit;
+        const optimized = req.query.optimized !== 'false'; // Default to optimized
 
         // Build query
         const query: any = {};
@@ -42,23 +61,48 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
             ];
         }
 
-        const products = await Product.find(query)
+        // Select only necessary fields for listing (exclude large image data if optimized)
+        const selectFields = optimized 
+            ? '_id name description brand price category stock sizes sizeType colors createdAt updatedAt image'
+            : undefined;
+
+        const productsQuery = Product.find(query)
             .populate('category', 'name')
             .skip(skip)
             .limit(limit)
-            .sort({ createdAt: -1 });
+            .sort({ createdAt: -1 })
+            .lean(); // Use lean() for better performance
 
-        const total = await Product.countDocuments(query);
+        if (selectFields) {
+            productsQuery.select(selectFields);
+        }
 
-        // Get unique brands for filter
-        const allBrands = await Product.distinct('brand');
+        // Execute query and count in parallel for better performance
+        const [products, total, allBrands] = await Promise.all([
+            productsQuery,
+            Product.countDocuments(query),
+            Product.distinct('brand')
+        ]);
+
         const brands = allBrands.filter(b => b && b.trim() !== '');
 
-        // Fix image URLs
+        // Process images - for listing, don't send full base64
         const productsWithFixedUrls = products.map(product => {
-            const p = product.toObject();
-            if (p.image) p.image = fixImageUrl(p.image, req);
-            if (p.images && Array.isArray(p.images)) {
+            const p = { ...product };
+            if (p.image) {
+                // If base64, just keep a short identifier for the frontend
+                if (optimized && isBase64Image(p.image)) {
+                    // Store that it has an image but don't send the full base64
+                    p.image = p.image.substring(0, 50);
+                    (p as any).hasBase64Image = true;
+                } else {
+                    p.image = fixImageUrl(p.image, req);
+                }
+            }
+            // Don't include additional images in listing
+            if (optimized) {
+                delete (p as any).images;
+            } else if (p.images && Array.isArray(p.images)) {
                 p.images = p.images.map((img: string) => fixImageUrl(img, req));
             }
             return p;

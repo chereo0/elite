@@ -80,6 +80,13 @@ const productSchema = new Schema<IProduct>(
 // Add text index for search
 productSchema.index({ name: 'text', description: 'text', brand: 'text' });
 
+// Add compound indexes for common queries
+productSchema.index({ category: 1, createdAt: -1 });
+productSchema.index({ brand: 1, createdAt: -1 });
+productSchema.index({ price: 1 });
+productSchema.index({ createdAt: -1 });
+productSchema.index({ stock: 1 });
+
 const Product = mongoose.model<IProduct>('Product', productSchema);
 
 export default Product;

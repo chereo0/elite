@@ -71,6 +71,7 @@ interface Product {
     sizes?: string[];
     colors?: string[];
     createdAt: string;
+    hasBase64Image?: boolean;
 }
 
 const MotionCard = motion(Card);
@@ -518,7 +519,7 @@ const Shop = () => {
                                                 <Box sx={{ position: 'relative', height: 280, overflow: 'hidden' }}>
                                                     <CardMedia
                                                         component="img"
-                                                        image={getImageUrl(product.image)}
+                                                        image={getImageUrl(product.image, product.hasBase64Image)}
                                                         alt={product.name}
                                                         sx={{
                                                             width: '100%',
@@ -537,7 +538,7 @@ const Shop = () => {
                                                                     _id: product._id,
                                                                     name: product.name,
                                                                     price: product.price,
-                                                                    image: getImageUrl(product.image),
+                                                                    image: getImageUrl(product.image, product.hasBase64Image),
                                                                     brand: product.brand,
                                                                     category: product.category,
                                                                 });

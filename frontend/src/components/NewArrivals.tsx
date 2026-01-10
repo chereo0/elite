@@ -31,6 +31,7 @@ interface Product {
     brand?: string;
     stock: number;
     createdAt: string;
+    hasBase64Image?: boolean;
 }
 
 const MotionCard = motion(Card);
@@ -228,7 +229,7 @@ const NewArrivals = () => {
                                             <Box sx={{ position: 'relative', overflow: 'hidden', height: 280 }}>
                                                 <CardMedia
                                                     component="img"
-                                                    image={getImageUrl(product.image)}
+                                                    image={getImageUrl(product.image, product.hasBase64Image)}
                                                     alt={product.name}
                                                     className="product-image"
                                                     sx={{

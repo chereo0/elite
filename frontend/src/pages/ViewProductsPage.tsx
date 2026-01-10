@@ -156,6 +156,7 @@ interface Product {
     sizes?: string[];
     colors?: string[];
     createdAt: string;
+    hasBase64Image?: boolean;
 }
 
 interface User {
@@ -598,7 +599,7 @@ const ViewProductsPage = () => {
                                                     <CardMedia
                                                         component="img"
                                                         height="180"
-                                                        image={getImageUrl(product.image)}
+                                                        image={getImageUrl(product.image, product.hasBase64Image)}
                                                         alt={product.name}
                                                         sx={{ objectFit: 'cover' }}
                                                     />
