@@ -1,5 +1,10 @@
 import Product from '../models/Product.js';
 
+/**
+ * @desc    Get all products (FAST - excludes image data completely)
+ * @route   GET /api/products
+ * @access  Public
+ */
 export const getProducts = async (req, res) => {
   try {
     const page = parseInt(req.query.page, 10) || 1;
@@ -26,17 +31,28 @@ export const getProducts = async (req, res) => {
       ];
     }
 
-    const products = await Product.find(query)
-      .populate('category', 'name')
-      .skip(skip)
-      .limit(limit)
-      .sort({ createdAt: -1 })
-      .allowDiskUse(true);
+    // CRITICAL: Exclude image and images fields completely - they contain huge base64 data
+    // This is the key to fast queries - MongoDB won't read the large fields from disk
+    const [products, total, allBrands] = await Promise.all([
+      Product.find(query)
+        .select('-image -images') // Exclude large fields
+        .populate('category', 'name')
+        .skip(skip)
+        .limit(limit)
+        .sort({ createdAt: -1 })
+        .lean(),
+      Product.countDocuments(query),
+      Product.distinct('brand')
+    ]);
 
-    const total = await Product.countDocuments(query);
-
-    const allBrands = await Product.distinct('brand');
     const brands = allBrands.filter((b) => b && b.trim() !== '');
+
+    // Mark all products as needing image fetch from detail endpoint
+    const productsWithPlaceholder = products.map(product => ({
+      ...product,
+      image: null, // Will use placeholder in frontend
+      hasBase64Image: true, // Signal frontend to show placeholder
+    }));
 
     return res.json({
       success: true,
@@ -45,10 +61,35 @@ export const getProducts = async (req, res) => {
       page,
       pages: Math.ceil(total / limit),
       brands,
-      data: products,
+      data: productsWithPlaceholder,
     });
   } catch (err) {
     console.error('getProducts error:', err);
+    return res.status(500).json({ success: false, message: err.message || 'Server error' });
+  }
+};
+
+/**
+ * @desc    Get product image only (for lazy loading)
+ * @route   GET /api/products/:id/image
+ * @access  Public
+ */
+export const getProductImage = async (req, res) => {
+  try {
+    const product = await Product.findById(req.params.id)
+      .select('image')
+      .lean();
+
+    if (!product) {
+      return res.status(404).json({ success: false, message: 'Product not found' });
+    }
+
+    return res.json({ 
+      success: true, 
+      data: { image: product.image || '' } 
+    });
+  } catch (err) {
+    console.error('getProductImage error:', err);
     return res.status(500).json({ success: false, message: err.message || 'Server error' });
   }
 };
