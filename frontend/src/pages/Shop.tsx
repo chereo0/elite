@@ -43,10 +43,11 @@ import TuneIcon from '@mui/icons-material/Tune';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
+import LazyProductImage from '../components/LazyProductImage';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useCart } from '../contexts/CartContext';
 import { API_URL } from '../config/api';
-import { getImageUrl } from '../utils/imageHelper';
+import { getImageUrl, PLACEHOLDER_IMAGE } from '../utils/imageHelper';
 
 interface Subcategory {
     _id: string;
@@ -517,16 +518,12 @@ const Shop = () => {
                                                 }}
                                             >
                                                 <Box sx={{ position: 'relative', height: 280, overflow: 'hidden' }}>
-                                                    <CardMedia
-                                                        component="img"
-                                                        image={getImageUrl(product.image, product.hasBase64Image)}
+                                                    <LazyProductImage
+                                                        productId={product._id}
+                                                        productImage={product.image}
+                                                        hasBase64Image={product.hasBase64Image}
                                                         alt={product.name}
-                                                        sx={{
-                                                            width: '100%',
-                                                            height: '100%',
-                                                            objectFit: 'cover',
-                                                            transition: 'transform 0.3s ease',
-                                                        }}
+                                                        height={280}
                                                     />
                                                     <IconButton
                                                         onClick={(e) => {
@@ -538,7 +535,7 @@ const Shop = () => {
                                                                     _id: product._id,
                                                                     name: product.name,
                                                                     price: product.price,
-                                                                    image: getImageUrl(product.image, product.hasBase64Image),
+                                                                    image: PLACEHOLDER_IMAGE, // Will be loaded lazily
                                                                     brand: product.brand,
                                                                     category: product.category,
                                                                 });

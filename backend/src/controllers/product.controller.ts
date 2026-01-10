@@ -2,26 +2,8 @@ import { Request, Response } from 'express';
 import Product from '../models/Product';
 import { fixImageUrl } from '../utils/urlHelper';
 
-// Helper to check if a string is base64 (large image data)
-const isBase64Image = (str: string): boolean => {
-    return str && (str.startsWith('data:image/') || str.length > 1000);
-};
-
-// Helper to get optimized image URL (truncate base64 for listings)
-const getOptimizedImageUrl = (url: string, req: Request, forListing: boolean = false): string => {
-    if (!url) return url;
-    
-    // If it's base64 and we're optimizing for listing, return a placeholder or thumbnail indicator
-    if (forListing && isBase64Image(url)) {
-        // Return only the first part to indicate it's base64, frontend will handle it
-        return url.substring(0, 100) + '...';
-    }
-    
-    return fixImageUrl(url, req);
-};
-
 /**
- * @desc    Get all products (optimized for listing - excludes large base64 images)
+ * @desc    Get all products (FAST - excludes image data completely)
  * @route   GET /api/products
  * @access  Public
  */
@@ -30,7 +12,6 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
         const page = parseInt(req.query.page as string) || 1;
         const limit = parseInt(req.query.limit as string) || 12;
         const skip = (page - 1) * limit;
-        const optimized = req.query.optimized !== 'false'; // Default to optimized
 
         // Build query
         const query: any = {};
@@ -61,23 +42,17 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
             ];
         }
 
-        // Select only necessary fields for listing (exclude large image data if optimized)
-        const selectFields = optimized 
-            ? '_id name description brand price category stock sizes sizeType colors createdAt updatedAt image'
-            : undefined;
-
+        // CRITICAL: Exclude image and images fields completely - they contain huge base64 data
+        // This is the key to fast queries - MongoDB won't read the large fields from disk
         const productsQuery = Product.find(query)
+            .select('-image -images') // Exclude large fields
             .populate('category', 'name')
             .skip(skip)
             .limit(limit)
             .sort({ createdAt: -1 })
-            .lean(); // Use lean() for better performance
+            .lean();
 
-        if (selectFields) {
-            productsQuery.select(selectFields);
-        }
-
-        // Execute query and count in parallel for better performance
+        // Execute query and count in parallel
         const [products, total, allBrands] = await Promise.all([
             productsQuery,
             Product.countDocuments(query),
@@ -86,27 +61,12 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
 
         const brands = allBrands.filter(b => b && b.trim() !== '');
 
-        // Process images - for listing, don't send full base64
-        const productsWithFixedUrls = products.map(product => {
-            const p = { ...product };
-            if (p.image) {
-                // If base64, just keep a short identifier for the frontend
-                if (optimized && isBase64Image(p.image)) {
-                    // Store that it has an image but don't send the full base64
-                    p.image = p.image.substring(0, 50);
-                    (p as any).hasBase64Image = true;
-                } else {
-                    p.image = fixImageUrl(p.image, req);
-                }
-            }
-            // Don't include additional images in listing
-            if (optimized) {
-                delete (p as any).images;
-            } else if (p.images && Array.isArray(p.images)) {
-                p.images = p.images.map((img: string) => fixImageUrl(img, req));
-            }
-            return p;
-        });
+        // Mark all products as needing image fetch from detail endpoint
+        const productsWithPlaceholder = products.map(product => ({
+            ...product,
+            image: null, // Will use placeholder in frontend
+            hasBase64Image: true, // Signal frontend to show placeholder
+        }));
 
         res.json({
             success: true,
@@ -115,7 +75,44 @@ export const getProducts = async (req: Request, res: Response): Promise<void> =>
             page,
             pages: Math.ceil(total / limit),
             brands,
-            data: productsWithFixedUrls,
+            data: productsWithPlaceholder,
+        });
+    } catch (error) {
+        res.status(500).json({
+            success: false,
+            message: 'Server error',
+            error: error instanceof Error ? error.message : 'Unknown error',
+        });
+    }
+};
+
+/**
+ * @desc    Get product image only (for lazy loading)
+ * @route   GET /api/products/:id/image
+ * @access  Public
+ */
+export const getProductImage = async (req: Request, res: Response): Promise<void> => {
+    try {
+        const product = await Product.findById(req.params.id)
+            .select('image')
+            .lean();
+
+        if (!product) {
+            res.status(404).json({
+                success: false,
+                message: 'Product not found',
+            });
+            return;
+        }
+
+        let imageUrl = product.image || '';
+        if (imageUrl && !imageUrl.startsWith('data:')) {
+            imageUrl = fixImageUrl(imageUrl, req);
+        }
+
+        res.json({
+            success: true,
+            data: { image: imageUrl },
         });
     } catch (error) {
         res.status(500).json({

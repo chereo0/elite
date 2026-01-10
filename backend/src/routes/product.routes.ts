@@ -2,6 +2,7 @@ import { Router } from 'express';
 import {
     getProducts,
     getProduct,
+    getProductImage,
     createProduct,
     updateProduct,
     deleteProduct,
@@ -13,6 +14,9 @@ const router = Router();
 
 // @route   GET /api/products
 router.get('/', getProducts);
+
+// @route   GET /api/products/:id/image (for lazy loading images)
+router.get('/:id/image', getProductImage);
 
 // @route   GET /api/products/:id
 router.get('/:id', getProduct);

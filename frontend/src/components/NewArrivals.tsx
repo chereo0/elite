@@ -20,6 +20,7 @@ import { motion } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
 import { API_URL } from '../config/api';
 import { getImageUrl } from '../utils/imageHelper';
+import LazyProductImage from './LazyProductImage';
 
 
 interface Product {
@@ -227,17 +228,12 @@ const NewArrivals = () => {
                                             }}
                                         >
                                             <Box sx={{ position: 'relative', overflow: 'hidden', height: 280 }}>
-                                                <CardMedia
-                                                    component="img"
-                                                    image={getImageUrl(product.image, product.hasBase64Image)}
+                                                <LazyProductImage
+                                                    productId={product._id}
+                                                    productImage={product.image}
+                                                    hasBase64Image={product.hasBase64Image}
                                                     alt={product.name}
-                                                    className="product-image"
-                                                    sx={{
-                                                        transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
-                                                        objectFit: 'cover',
-                                                        width: '100%',
-                                                        height: '100%',
-                                                    }}
+                                                    height={280}
                                                 />
 
                                                 {/* Overlay with actions */}

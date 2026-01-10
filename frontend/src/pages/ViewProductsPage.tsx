@@ -54,6 +54,7 @@ import { Link as RouterLink } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
 import { API_URL } from '../config/api';
 import { getImageUrl } from '../utils/imageHelper';
+import LazyProductImage from '../components/LazyProductImage';
 
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
@@ -596,12 +597,12 @@ const ViewProductsPage = () => {
                                                         },
                                                     }}
                                                 >
-                                                    <CardMedia
-                                                        component="img"
-                                                        height="180"
-                                                        image={getImageUrl(product.image, product.hasBase64Image)}
+                                                    <LazyProductImage
+                                                        productId={product._id}
+                                                        productImage={product.image}
+                                                        hasBase64Image={product.hasBase64Image}
                                                         alt={product.name}
-                                                        sx={{ objectFit: 'cover' }}
+                                                        height={180}
                                                     />
                                                     <CardContent sx={{ flex: 1 }}>
                                                         <Typography variant="h6" sx={{ fontWeight: 600, mb: 1, fontSize: '1rem' }} noWrap>
