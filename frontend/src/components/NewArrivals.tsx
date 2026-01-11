@@ -19,7 +19,7 @@ import AutoAwesomeIcon from '@mui/icons-material/AutoAwesome';
 import { motion } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
 import { API_URL } from '../config/api';
-import { getImageUrl } from '../utils/imageHelper';
+import { getImageUrl, PLACEHOLDER_IMAGE } from '../utils/imageHelper';
 
 
 interface Product {
@@ -231,6 +231,9 @@ const NewArrivals = () => {
                                                     image={getImageUrl(product.image)}
                                                     alt={product.name}
                                                     className="product-image"
+                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                        e.currentTarget.src = PLACEHOLDER_IMAGE;
+                                                    }}
                                                     sx={{
                                                         width: '100%',
                                                         height: '100%',

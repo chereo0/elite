@@ -53,7 +53,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import { Link as RouterLink } from 'react-router-dom';
 import logo from '../assets/logo.jpg';
 import { API_URL } from '../config/api';
-import { getImageUrl } from '../utils/imageHelper';
+import { getImageUrl, PLACEHOLDER_IMAGE } from '../utils/imageHelper';
 
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
@@ -599,6 +599,9 @@ const ViewProductsPage = () => {
                                                         component="img"
                                                         image={getImageUrl(product.image)}
                                                         alt={product.name}
+                                                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                            e.currentTarget.src = PLACEHOLDER_IMAGE;
+                                                        }}
                                                         sx={{
                                                             height: 180,
                                                             objectFit: 'cover',

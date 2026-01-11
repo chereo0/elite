@@ -557,6 +557,9 @@ const Shop = () => {
                                                         component="img"
                                                         image={getImageUrl(product.image)}
                                                         alt={product.name}
+                                                        onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
+                                                            e.currentTarget.src = PLACEHOLDER_IMAGE;
+                                                        }}
                                                         sx={{
                                                             width: '100%',
                                                             height: '100%',
