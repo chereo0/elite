@@ -1,3 +1,6 @@
+import fs from 'fs';
+import path from 'path';
+
 export const uploadImage = async (req, res) => {
   try {
     if (!req.file) {
@@ -5,7 +8,16 @@ export const uploadImage = async (req, res) => {
     }
 
     const file = req.file;
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
+    
+    // Read file and convert to base64 data URI
+    const filePath = path.resolve(file.path);
+    const fileBuffer = fs.readFileSync(filePath);
+    const base64Data = fileBuffer.toString('base64');
+    const mimeType = file.mimetype;
+    const dataUri = `data:${mimeType};base64,${base64Data}`;
+    
+    // Clean up the temp file
+    fs.unlinkSync(filePath);
 
     return res.json({
       success: true,
@@ -14,10 +26,11 @@ export const uploadImage = async (req, res) => {
         originalname: file.originalname,
         mimetype: file.mimetype,
         size: file.size,
-        url: `${baseUrl}/uploads/${file.filename}`,
+        url: dataUri, // Return base64 data URI instead of file URL
       },
     });
   } catch (err) {
+    console.error('Upload error:', err);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
@@ -28,18 +41,29 @@ export const uploadMultipleImages = async (req, res) => {
       return res.status(400).json({ success: false, message: 'No files uploaded' });
     }
 
-    const baseUrl = process.env.BASE_URL || `http://localhost:${process.env.PORT || 5000}`;
-
-    const uploadedFiles = req.files.map((file) => ({
-      filename: file.filename,
-      originalname: file.originalname,
-      mimetype: file.mimetype,
-      size: file.size,
-      url: `${baseUrl}/uploads/${file.filename}`,
-    }));
+    const uploadedFiles = req.files.map((file) => {
+      // Read file and convert to base64 data URI
+      const filePath = path.resolve(file.path);
+      const fileBuffer = fs.readFileSync(filePath);
+      const base64Data = fileBuffer.toString('base64');
+      const mimeType = file.mimetype;
+      const dataUri = `data:${mimeType};base64,${base64Data}`;
+      
+      // Clean up the temp file
+      fs.unlinkSync(filePath);
+      
+      return {
+        filename: file.filename,
+        originalname: file.originalname,
+        mimetype: file.mimetype,
+        size: file.size,
+        url: dataUri, // Return base64 data URI instead of file URL
+      };
+    });
 
     return res.json({ success: true, count: uploadedFiles.length, data: uploadedFiles });
   } catch (err) {
+    console.error('Upload error:', err);
     return res.status(500).json({ success: false, message: 'Server error' });
   }
 };
