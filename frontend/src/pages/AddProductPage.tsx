@@ -130,6 +130,7 @@ const sidebarItems = [
 
 const availableClothingSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const availableShoeSizes = ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
+const availableShoeStyles = ['FG', 'TF', 'low-cut', 'mid-cut', 'classic'];
 
 // Single colors
 const singleColors = [
@@ -231,6 +232,7 @@ const AddProductPage = () => {
     const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
     const [sizeType, setSizeType] = useState<'clothing' | 'shoes'>('clothing');
     const [selectedColors, setSelectedColors] = useState<string[]>([]);
+    const [selectedShoeStyle, setSelectedShoeStyle] = useState<string>('');
 
     // Form submission state
     const [loading, setLoading] = useState(false);
@@ -302,6 +304,9 @@ const AddProductPage = () => {
     const handleSizeTypeChange = (newSizeType: 'clothing' | 'shoes') => {
         setSizeType(newSizeType);
         setSelectedSizes([]); // Reset sizes when type changes
+        if (newSizeType !== 'shoes') {
+            setSelectedShoeStyle(''); // Reset shoe style if not shoes
+        }
     };
 
     const handleSubmit = async (e: React.FormEvent) => {
@@ -392,6 +397,7 @@ const AddProductPage = () => {
                     sizes: selectedSizes,
                     sizeType: sizeType,
                     colors: selectedColors,
+                    shoeStyle: sizeType === 'shoes' ? selectedShoeStyle : '',
                 }),
             });
 
@@ -418,6 +424,7 @@ const AddProductPage = () => {
             setSelectedSizes([]);
             setSizeType('clothing');
             setSelectedColors([]);
+            setSelectedShoeStyle('');
             setImagePreview(null);
             setImageFile(null);
             setAdditionalImageFiles([]);
@@ -943,6 +950,29 @@ const AddProductPage = () => {
                                                 </Select>
                                             </FormControl>
                                         </Grid>
+
+                                        {/* Shoe Style - Only show when sizeType is shoes */}
+                                        {sizeType === 'shoes' && (
+                                            <Grid item xs={12} sm={6}>
+                                                <FormControl fullWidth sx={inputStyles}>
+                                                    <InputLabel>Shoe Style</InputLabel>
+                                                    <Select
+                                                        value={selectedShoeStyle}
+                                                        onChange={(e) => setSelectedShoeStyle(e.target.value)}
+                                                        input={<OutlinedInput label="Shoe Style" />}
+                                                    >
+                                                        <MenuItem value="">
+                                                            <em>Select Style</em>
+                                                        </MenuItem>
+                                                        {availableShoeStyles.map((style) => (
+                                                            <MenuItem key={style} value={style}>
+                                                                {style}
+                                                            </MenuItem>
+                                                        ))}
+                                                    </Select>
+                                                </FormControl>
+                                            </Grid>
+                                        )}
 
                                         {/* Colors with Search */}
                                         <Grid item xs={12}>

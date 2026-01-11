@@ -13,6 +13,7 @@ const productSchema = new mongoose.Schema(
     sizeType: { type: String, default: 'clothing' },
     sizes: [{ type: String }],
     colors: [{ type: String }],
+    shoeStyle: { type: String, enum: ['', 'FG', 'TF', 'low-cut', 'mid-cut', 'classic'], default: '' },
   },
   { timestamps: true }
 );
@@ -20,6 +21,7 @@ const productSchema = new mongoose.Schema(
 productSchema.index({ name: 'text', description: 'text', brand: 'text' });
 productSchema.index({ createdAt: -1 });
 productSchema.index({ category: 1, createdAt: -1 });
+productSchema.index({ shoeStyle: 1 });
 
 const Product = mongoose.models.Product || mongoose.model('Product', productSchema);
 

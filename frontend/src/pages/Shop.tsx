@@ -77,6 +77,8 @@ interface Product {
 
 const MotionCard = motion(Card);
 
+const availableShoeStyles = ['FG', 'TF', 'low-cut', 'mid-cut', 'classic'];
+
 const Shop = () => {
     const theme = useTheme();
     const isMobile = useMediaQuery(theme.breakpoints.down('md'));
@@ -97,6 +99,7 @@ const Shop = () => {
     const [selectedBrand, setSelectedBrand] = useState('');
     const [searchQuery, setSearchQuery] = useState('');
     const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
+    const [selectedShoeStyle, setSelectedShoeStyle] = useState('');
 
     // UI state
     const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
@@ -116,7 +119,7 @@ const Shop = () => {
 
     useEffect(() => {
         fetchProducts();
-    }, [page, selectedCategory, selectedBrand, searchQuery]);
+    }, [page, selectedCategory, selectedBrand, searchQuery, selectedShoeStyle]);
 
     const fetchCategories = async () => {
         try {
@@ -137,6 +140,7 @@ const Shop = () => {
             if (selectedCategory) url += `&category=${selectedCategory}`;
             if (selectedBrand) url += `&brand=${encodeURIComponent(selectedBrand)}`;
             if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
+            if (selectedShoeStyle) url += `&shoeStyle=${encodeURIComponent(selectedShoeStyle)}`;
 
             const response = await fetch(url);
             const data = await response.json();
@@ -188,6 +192,7 @@ const Shop = () => {
         setSelectedBrand('');
         setSearchQuery('');
         setPriceRange([0, 1000]);
+        setSelectedShoeStyle('');
         setPage(1);
     };
 
@@ -196,7 +201,7 @@ const Shop = () => {
         return 'Category';
     };
 
-    const activeFiltersCount = [selectedCategory, selectedBrand, searchQuery].filter(Boolean).length;
+    const activeFiltersCount = [selectedCategory, selectedBrand, searchQuery, selectedShoeStyle].filter(Boolean).length;
 
     // Filter sidebar content
     const filterContent = (
@@ -347,6 +352,38 @@ const Shop = () => {
                     <MenuItem value="">All Brands</MenuItem>
                     {brands.map((brand) => (
                         <MenuItem key={brand} value={brand}>{brand}</MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+
+            <Divider sx={{ borderColor: 'rgba(255,255,255,0.1)', mb: 3 }} />
+
+            {/* Shoe Style Filter */}
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.1em' }}>
+                SHOE STYLE
+            </Typography>
+            <FormControl fullWidth sx={{ mb: 3 }}>
+                <Select
+                    value={selectedShoeStyle}
+                    onChange={(e) => {
+                        setSelectedShoeStyle(e.target.value);
+                        setPage(1);
+                        if (isMobile) setFilterDrawerOpen(false);
+                    }}
+                    displayEmpty
+                    sx={{
+                        background: 'rgba(255,255,255,0.05)',
+                        borderRadius: 2,
+                        color: 'white',
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(124, 77, 255, 0.2)' },
+                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(124, 77, 255, 0.4)' },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#7c4dff' },
+                        '& .MuiSelect-icon': { color: 'rgba(255,255,255,0.5)' },
+                    }}
+                >
+                    <MenuItem value="">All Styles</MenuItem>
+                    {availableShoeStyles.map((style) => (
+                        <MenuItem key={style} value={style}>{style}</MenuItem>
                     ))}
                 </Select>
             </FormControl>

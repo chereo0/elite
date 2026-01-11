@@ -17,6 +17,9 @@ export const getProducts = async (req, res) => {
 
     if (req.query.brand) query.brand = { $regex: req.query.brand, $options: 'i' };
 
+    // Shoe style filter
+    if (req.query.shoeStyle) query.shoeStyle = req.query.shoeStyle;
+
     if (req.query.minPrice || req.query.maxPrice) {
       query.price = {};
       if (req.query.minPrice) query.price.$gte = parseFloat(req.query.minPrice);
@@ -111,7 +114,7 @@ export const getProduct = async (req, res) => {
 
 export const createProduct = async (req, res) => {
   try {
-    const { name, description, brand, price, category, image, images, stock, sizeType, sizes, colors } = req.body;
+    const { name, description, brand, price, category, image, images, stock, sizeType, sizes, colors, shoeStyle } = req.body;
 
     const product = await Product.create({
       name,
@@ -125,6 +128,7 @@ export const createProduct = async (req, res) => {
       sizeType,
       sizes,
       colors,
+      shoeStyle: sizeType === 'shoes' ? shoeStyle : '',
     });
 
     return res.status(201).json({ success: true, data: product });
