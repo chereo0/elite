@@ -33,6 +33,8 @@ import {
     DialogActions,
     InputAdornment,
     Pagination,
+    Checkbox,
+    OutlinedInput,
 } from '@mui/material';
 import { motion, AnimatePresence } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
@@ -57,6 +59,10 @@ import { getImageUrl, PLACEHOLDER_IMAGE } from '../utils/imageHelper';
 
 const MotionBox = motion(Box);
 const MotionCard = motion(Card);
+
+// Style options
+const availableShoeStyles = ['FG', 'TF'];
+const availableSocksStyles = ['low-cut', 'mid-cut'];
 
 // Glassmorphism styles
 const glassCardStyles = {
@@ -155,6 +161,9 @@ interface Product {
     stock: number;
     sizes?: string[];
     colors?: string[];
+    sizeType?: string;
+    shoeStyles?: string[];
+    socksStyles?: string[];
     createdAt: string;
 }
 
@@ -317,6 +326,8 @@ const ViewProductsPage = () => {
                     stock: editProduct.stock,
                     category: typeof editProduct.category === 'object' ? editProduct.category._id : editProduct.category,
                     image: imageUrl,
+                    shoeStyles: editProduct.shoeStyles || [],
+                    socksStyles: editProduct.socksStyles || [],
                 }),
             });
 
@@ -873,6 +884,50 @@ const ViewProductsPage = () => {
                                         )}
                                     </Box>
                                 </Box>
+                            </Grid>
+
+                            {/* Shoe Styles - Only show when sizeType is shoes */}
+                            {editProduct.sizeType === 'shoes' && (
+                                <Grid item xs={12} sm={6}>
+                                    <FormControl fullWidth sx={inputStyles}>
+                                        <InputLabel>Shoe Style (FG/TF)</InputLabel>
+                                        <Select
+                                            multiple
+                                            value={editProduct.shoeStyles || []}
+                                            onChange={(e) => setEditProduct({ ...editProduct, shoeStyles: typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value })}
+                                            input={<OutlinedInput label="Shoe Style (FG/TF)" />}
+                                            renderValue={(selected) => (selected as string[]).join(', ')}
+                                        >
+                                            {availableShoeStyles.map((style) => (
+                                                <MenuItem key={style} value={style}>
+                                                    <Checkbox checked={(editProduct.shoeStyles || []).indexOf(style) > -1} />
+                                                    <ListItemText primary={style} />
+                                                </MenuItem>
+                                            ))}
+                                        </Select>
+                                    </FormControl>
+                                </Grid>
+                            )}
+
+                            {/* Socks Styles */}
+                            <Grid item xs={12} sm={6}>
+                                <FormControl fullWidth sx={inputStyles}>
+                                    <InputLabel>Socks Style</InputLabel>
+                                    <Select
+                                        multiple
+                                        value={editProduct.socksStyles || []}
+                                        onChange={(e) => setEditProduct({ ...editProduct, socksStyles: typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value })}
+                                        input={<OutlinedInput label="Socks Style" />}
+                                        renderValue={(selected) => (selected as string[]).join(', ')}
+                                    >
+                                        {availableSocksStyles.map((style) => (
+                                            <MenuItem key={style} value={style}>
+                                                <Checkbox checked={(editProduct.socksStyles || []).indexOf(style) > -1} />
+                                                <ListItemText primary={style} />
+                                            </MenuItem>
+                                        ))}
+                                    </Select>
+                                </FormControl>
                             </Grid>
                         </Grid>
                     )}

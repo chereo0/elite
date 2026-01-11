@@ -75,7 +75,8 @@ interface Product {
 
 const MotionCard = motion(Card);
 
-const availableShoeStyles = ['FG', 'TF', 'low-cut', 'mid-cut', 'classic'];
+const availableShoeStyles = ['FG', 'TF'];
+const availableSocksStyles = ['low-cut', 'mid-cut'];
 
 const Shop = () => {
     const theme = useTheme();
@@ -98,6 +99,7 @@ const Shop = () => {
     const [searchQuery, setSearchQuery] = useState('');
     const [priceRange, setPriceRange] = useState<number[]>([0, 1000]);
     const [selectedShoeStyle, setSelectedShoeStyle] = useState('');
+    const [selectedSocksStyle, setSelectedSocksStyle] = useState('');
 
     // UI state
     const [filterDrawerOpen, setFilterDrawerOpen] = useState(false);
@@ -117,7 +119,7 @@ const Shop = () => {
 
     useEffect(() => {
         fetchProducts();
-    }, [page, selectedCategory, selectedBrand, searchQuery, selectedShoeStyle]);
+    }, [page, selectedCategory, selectedBrand, searchQuery, selectedShoeStyle, selectedSocksStyle]);
 
     const fetchCategories = async () => {
         try {
@@ -139,6 +141,7 @@ const Shop = () => {
             if (selectedBrand) url += `&brand=${encodeURIComponent(selectedBrand)}`;
             if (searchQuery) url += `&search=${encodeURIComponent(searchQuery)}`;
             if (selectedShoeStyle) url += `&shoeStyle=${encodeURIComponent(selectedShoeStyle)}`;
+            if (selectedSocksStyle) url += `&socksStyle=${encodeURIComponent(selectedSocksStyle)}`;
 
             const response = await fetch(url);
             const data = await response.json();
@@ -191,6 +194,7 @@ const Shop = () => {
         setSearchQuery('');
         setPriceRange([0, 1000]);
         setSelectedShoeStyle('');
+        setSelectedSocksStyle('');
         setPage(1);
     };
 
@@ -199,7 +203,7 @@ const Shop = () => {
         return 'Category';
     };
 
-    const activeFiltersCount = [selectedCategory, selectedBrand, searchQuery, selectedShoeStyle].filter(Boolean).length;
+    const activeFiltersCount = [selectedCategory, selectedBrand, searchQuery, selectedShoeStyle, selectedSocksStyle].filter(Boolean).length;
 
     // Filter sidebar content
     const filterContent = (
@@ -381,6 +385,36 @@ const Shop = () => {
                 >
                     <MenuItem value="">All Styles</MenuItem>
                     {availableShoeStyles.map((style) => (
+                        <MenuItem key={style} value={style}>{style}</MenuItem>
+                    ))}
+                </Select>
+            </FormControl>
+
+            {/* Socks Style Filter */}
+            <Typography variant="subtitle2" sx={{ fontWeight: 600, mb: 2, color: 'rgba(255,255,255,0.7)', letterSpacing: '0.1em' }}>
+                SOCKS STYLE
+            </Typography>
+            <FormControl fullWidth sx={{ mb: 3 }}>
+                <Select
+                    value={selectedSocksStyle}
+                    onChange={(e) => {
+                        setSelectedSocksStyle(e.target.value);
+                        setPage(1);
+                        if (isMobile) setFilterDrawerOpen(false);
+                    }}
+                    displayEmpty
+                    sx={{
+                        background: 'rgba(255,255,255,0.05)',
+                        borderRadius: 2,
+                        color: 'white',
+                        '& .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(124, 77, 255, 0.2)' },
+                        '&:hover .MuiOutlinedInput-notchedOutline': { borderColor: 'rgba(124, 77, 255, 0.4)' },
+                        '&.Mui-focused .MuiOutlinedInput-notchedOutline': { borderColor: '#7c4dff' },
+                        '& .MuiSelect-icon': { color: 'rgba(255,255,255,0.5)' },
+                    }}
+                >
+                    <MenuItem value="">All Styles</MenuItem>
+                    {availableSocksStyles.map((style) => (
                         <MenuItem key={style} value={style}>{style}</MenuItem>
                     ))}
                 </Select>

@@ -130,7 +130,8 @@ const sidebarItems = [
 
 const availableClothingSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
 const availableShoeSizes = ['36', '37', '38', '39', '40', '41', '42', '43', '44', '45', '46'];
-const availableShoeStyles = ['FG', 'TF', 'low-cut', 'mid-cut', 'classic'];
+const availableShoeStyles = ['FG', 'TF'];
+const availableSocksStyles = ['low-cut', 'mid-cut'];
 
 // Single colors
 const singleColors = [
@@ -232,7 +233,8 @@ const AddProductPage = () => {
     const [selectedSizes, setSelectedSizes] = useState<string[]>([]);
     const [sizeType, setSizeType] = useState<'clothing' | 'shoes'>('clothing');
     const [selectedColors, setSelectedColors] = useState<string[]>([]);
-    const [selectedShoeStyle, setSelectedShoeStyle] = useState<string>('');
+    const [selectedShoeStyles, setSelectedShoeStyles] = useState<string[]>([]);
+    const [selectedSocksStyles, setSelectedSocksStyles] = useState<string[]>([]);
 
     // Form submission state
     const [loading, setLoading] = useState(false);
@@ -305,7 +307,7 @@ const AddProductPage = () => {
         setSizeType(newSizeType);
         setSelectedSizes([]); // Reset sizes when type changes
         if (newSizeType !== 'shoes') {
-            setSelectedShoeStyle(''); // Reset shoe style if not shoes
+            setSelectedShoeStyles([]); // Reset shoe styles if not shoes
         }
     };
 
@@ -397,7 +399,8 @@ const AddProductPage = () => {
                     sizes: selectedSizes,
                     sizeType: sizeType,
                     colors: selectedColors,
-                    shoeStyle: sizeType === 'shoes' ? selectedShoeStyle : '',
+                    shoeStyles: sizeType === 'shoes' ? selectedShoeStyles : [],
+                    socksStyles: selectedSocksStyles,
                 }),
             });
 
@@ -424,7 +427,8 @@ const AddProductPage = () => {
             setSelectedSizes([]);
             setSizeType('clothing');
             setSelectedColors([]);
-            setSelectedShoeStyle('');
+            setSelectedShoeStyles([]);
+            setSelectedSocksStyles([]);
             setImagePreview(null);
             setImageFile(null);
             setAdditionalImageFiles([]);
@@ -951,28 +955,49 @@ const AddProductPage = () => {
                                             </FormControl>
                                         </Grid>
 
-                                        {/* Shoe Style - Only show when sizeType is shoes */}
+                                        {/* Shoe Styles - Only show when sizeType is shoes (multi-select) */}
                                         {sizeType === 'shoes' && (
                                             <Grid item xs={12} sm={6}>
                                                 <FormControl fullWidth sx={inputStyles}>
-                                                    <InputLabel>Shoe Style</InputLabel>
+                                                    <InputLabel>Shoe Style (FG/TF)</InputLabel>
                                                     <Select
-                                                        value={selectedShoeStyle}
-                                                        onChange={(e) => setSelectedShoeStyle(e.target.value)}
-                                                        input={<OutlinedInput label="Shoe Style" />}
+                                                        multiple
+                                                        value={selectedShoeStyles}
+                                                        onChange={(e) => setSelectedShoeStyles(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)}
+                                                        input={<OutlinedInput label="Shoe Style (FG/TF)" />}
+                                                        renderValue={(selected) => (selected as string[]).join(', ')}
                                                     >
-                                                        <MenuItem value="">
-                                                            <em>Select Style</em>
-                                                        </MenuItem>
                                                         {availableShoeStyles.map((style) => (
                                                             <MenuItem key={style} value={style}>
-                                                                {style}
+                                                                <Checkbox checked={selectedShoeStyles.indexOf(style) > -1} />
+                                                                <ListItemText primary={style} />
                                                             </MenuItem>
                                                         ))}
                                                     </Select>
                                                 </FormControl>
                                             </Grid>
                                         )}
+
+                                        {/* Socks Styles (multi-select) */}
+                                        <Grid item xs={12} sm={6}>
+                                            <FormControl fullWidth sx={inputStyles}>
+                                                <InputLabel>Socks Style</InputLabel>
+                                                <Select
+                                                    multiple
+                                                    value={selectedSocksStyles}
+                                                    onChange={(e) => setSelectedSocksStyles(typeof e.target.value === 'string' ? e.target.value.split(',') : e.target.value)}
+                                                    input={<OutlinedInput label="Socks Style" />}
+                                                    renderValue={(selected) => (selected as string[]).join(', ')}
+                                                >
+                                                    {availableSocksStyles.map((style) => (
+                                                        <MenuItem key={style} value={style}>
+                                                            <Checkbox checked={selectedSocksStyles.indexOf(style) > -1} />
+                                                            <ListItemText primary={style} />
+                                                        </MenuItem>
+                                                    ))}
+                                                </Select>
+                                            </FormControl>
+                                        </Grid>
 
                                         {/* Colors with Search */}
                                         <Grid item xs={12}>
