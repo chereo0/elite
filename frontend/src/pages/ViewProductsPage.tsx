@@ -270,15 +270,45 @@ const ViewProductsPage = () => {
         }
     };
 
-    const handleEditClick = (product: Product) => {
-        setEditProduct({ ...product });
-        setEditImageFile(null);
-        setEditImagePreview(null);
-        setEditAdditionalImageFiles([]);
-        setEditAdditionalImagePreviews([]);
-        setExistingImages(product.images || []);
-        setImagesToDelete([]);
-        setEditDialogOpen(true);
+    const handleEditClick = async (product: Product) => {
+        // Fetch full product details including images
+        try {
+            const response = await fetch(`${API_URL}/products/${product._id}`);
+            const data = await response.json();
+            
+            if (data.success && data.data) {
+                const fullProduct = data.data;
+                setEditProduct(fullProduct);
+                setEditImageFile(null);
+                setEditImagePreview(null);
+                setEditAdditionalImageFiles([]);
+                setEditAdditionalImagePreviews([]);
+                setExistingImages(fullProduct.images || []);
+                setImagesToDelete([]);
+                setEditDialogOpen(true);
+            } else {
+                // Fallback to the product from list
+                setEditProduct({ ...product });
+                setEditImageFile(null);
+                setEditImagePreview(null);
+                setEditAdditionalImageFiles([]);
+                setEditAdditionalImagePreviews([]);
+                setExistingImages(product.images || []);
+                setImagesToDelete([]);
+                setEditDialogOpen(true);
+            }
+        } catch (err) {
+            console.error('Failed to fetch product details:', err);
+            // Fallback to the product from list
+            setEditProduct({ ...product });
+            setEditImageFile(null);
+            setEditImagePreview(null);
+            setEditAdditionalImageFiles([]);
+            setEditAdditionalImagePreviews([]);
+            setExistingImages(product.images || []);
+            setImagesToDelete([]);
+            setEditDialogOpen(true);
+        }
     };
 
     const handleEditImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
