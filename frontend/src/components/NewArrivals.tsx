@@ -20,7 +20,6 @@ import { motion } from 'framer-motion';
 import { Link as RouterLink } from 'react-router-dom';
 import { API_URL } from '../config/api';
 import { getImageUrl } from '../utils/imageHelper';
-import LazyProductImage from './LazyProductImage';
 
 
 interface Product {
@@ -32,7 +31,6 @@ interface Product {
     brand?: string;
     stock: number;
     createdAt: string;
-    hasBase64Image?: boolean;
 }
 
 const MotionCard = motion(Card);
@@ -228,12 +226,17 @@ const NewArrivals = () => {
                                             }}
                                         >
                                             <Box sx={{ position: 'relative', overflow: 'hidden', height: 280 }}>
-                                                <LazyProductImage
-                                                    productId={product._id}
-                                                    productImage={product.image}
-                                                    hasBase64Image={product.hasBase64Image}
+                                                <CardMedia
+                                                    component="img"
+                                                    image={getImageUrl(product.image)}
                                                     alt={product.name}
-                                                    height={280}
+                                                    className="product-image"
+                                                    sx={{
+                                                        width: '100%',
+                                                        height: '100%',
+                                                        objectFit: 'cover',
+                                                        transition: 'transform 0.6s cubic-bezier(0.4, 0, 0.2, 1)',
+                                                    }}
                                                 />
 
                                                 {/* Overlay with actions */}

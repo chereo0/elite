@@ -43,7 +43,6 @@ import TuneIcon from '@mui/icons-material/Tune';
 import { motion } from 'framer-motion';
 import Navbar from '../components/Navbar';
 import Footer from '../components/Footer';
-import LazyProductImage from '../components/LazyProductImage';
 import { useWishlist } from '../contexts/WishlistContext';
 import { useCart } from '../contexts/CartContext';
 import { API_URL } from '../config/api';
@@ -72,7 +71,6 @@ interface Product {
     sizes?: string[];
     colors?: string[];
     createdAt: string;
-    hasBase64Image?: boolean;
 }
 
 const MotionCard = motion(Card);

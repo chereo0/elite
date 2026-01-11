@@ -6,15 +6,10 @@ export const PLACEHOLDER_IMAGE = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAw
 // Image cache to avoid refetching
 const imageCache: Map<string, string> = new Map();
 
-export const getImageUrl = (url: string | undefined, hasBase64Image?: boolean): string => {
+export const getImageUrl = (url: string | undefined): string => {
     if (!url) return PLACEHOLDER_IMAGE;
 
-    // If the product has a base64 image but it was truncated for performance
-    if (hasBase64Image || (url.startsWith('data:image') && url.length < 100)) {
-        return PLACEHOLDER_IMAGE;
-    }
-
-    // If it's a full data URI, return it as is
+    // If it's a full data URI (base64), return it as is
     if (url.startsWith('data:')) {
         return url;
     }
