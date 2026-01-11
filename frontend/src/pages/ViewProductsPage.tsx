@@ -193,6 +193,8 @@ const ViewProductsPage = () => {
     const [editDialogOpen, setEditDialogOpen] = useState(false);
     const [editProduct, setEditProduct] = useState<Product | null>(null);
     const [editLoading, setEditLoading] = useState(false);
+    const [editImageFile, setEditImageFile] = useState<File | null>(null);
+    const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
 
     // Delete dialog state
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -256,7 +258,18 @@ const ViewProductsPage = () => {
 
     const handleEditClick = (product: Product) => {
         setEditProduct({ ...product });
+        setEditImageFile(null);
+        setEditImagePreview(null);
         setEditDialogOpen(true);
+    };
+
+    const handleEditImageUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const file = event.target.files?.[0];
+        if (file) {
+            setEditImageFile(file);
+            const previewUrl = URL.createObjectURL(file);
+            setEditImagePreview(previewUrl);
+        }
     };
 
     const handleEditSave = async () => {
@@ -266,6 +279,30 @@ const ViewProductsPage = () => {
 
         try {
             const token = localStorage.getItem('token');
+            
+            let imageUrl = editProduct.image;
+            
+            // If a new image was selected, upload it first
+            if (editImageFile) {
+                const imageFormData = new FormData();
+                imageFormData.append('image', editImageFile);
+                
+                const uploadResponse = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: imageFormData,
+                });
+                
+                if (!uploadResponse.ok) {
+                    throw new Error('Failed to upload image');
+                }
+                
+                const uploadData = await uploadResponse.json();
+                imageUrl = uploadData.data.url;
+            }
+            
             const response = await fetch(`${API_URL}/products/${editProduct._id}`, {
                 method: 'PUT',
                 headers: {
@@ -279,6 +316,7 @@ const ViewProductsPage = () => {
                     price: editProduct.price,
                     stock: editProduct.stock,
                     category: typeof editProduct.category === 'object' ? editProduct.category._id : editProduct.category,
+                    image: imageUrl,
                 }),
             });
 
@@ -290,6 +328,8 @@ const ViewProductsPage = () => {
 
             setSuccess('Product updated successfully!');
             setEditDialogOpen(false);
+            setEditImageFile(null);
+            setEditImagePreview(null);
             fetchProducts();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to update product');
@@ -777,6 +817,62 @@ const ViewProductsPage = () => {
                                         ])}
                                     </Select>
                                 </FormControl>
+                            </Grid>
+                            
+                            {/* Image Upload Section */}
+                            <Grid item xs={12}>
+                                <Typography variant="subtitle2" sx={{ mb: 1, color: 'rgba(255,255,255,0.7)' }}>
+                                    Product Image
+                                </Typography>
+                                <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                                    <Box
+                                        sx={{
+                                            width: 100,
+                                            height: 100,
+                                            borderRadius: 2,
+                                            overflow: 'hidden',
+                                            border: '1px solid rgba(30, 144, 255, 0.3)',
+                                            flexShrink: 0,
+                                        }}
+                                    >
+                                        <img
+                                            src={editImagePreview || getImageUrl(editProduct.image)}
+                                            alt="Product"
+                                            onError={(e) => { e.currentTarget.src = PLACEHOLDER_IMAGE; }}
+                                            style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                        />
+                                    </Box>
+                                    <Box sx={{ flex: 1 }}>
+                                        <input
+                                            type="file"
+                                            accept="image/*"
+                                            onChange={handleEditImageUpload}
+                                            style={{ display: 'none' }}
+                                            id="edit-image-upload"
+                                        />
+                                        <label htmlFor="edit-image-upload">
+                                            <Button
+                                                component="span"
+                                                variant="outlined"
+                                                sx={{
+                                                    borderColor: 'rgba(30, 144, 255, 0.5)',
+                                                    color: '#1e90ff',
+                                                    '&:hover': {
+                                                        borderColor: '#1e90ff',
+                                                        bgcolor: 'rgba(30, 144, 255, 0.1)',
+                                                    },
+                                                }}
+                                            >
+                                                {editImageFile ? 'Change Image' : 'Upload New Image'}
+                                            </Button>
+                                        </label>
+                                        {editImageFile && (
+                                            <Typography variant="caption" sx={{ display: 'block', mt: 1, color: '#00c853' }}>
+                                                ✓ New image selected: {editImageFile.name}
+                                            </Typography>
+                                        )}
+                                    </Box>
+                                </Box>
                             </Grid>
                         </Grid>
                     )}
