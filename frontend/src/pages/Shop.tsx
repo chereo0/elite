@@ -555,12 +555,16 @@ const Shop = () => {
                                                 }}
                                             >
                                                 <Box sx={{ position: 'relative', height: 280, overflow: 'hidden' }}>
-                                                    <LazyProductImage
-                                                        productId={product._id}
-                                                        productImage={product.image}
-                                                        hasBase64Image={product.hasBase64Image}
+                                                    <CardMedia
+                                                        component="img"
+                                                        image={getImageUrl(product.image)}
                                                         alt={product.name}
-                                                        height={280}
+                                                        sx={{
+                                                            width: '100%',
+                                                            height: '100%',
+                                                            objectFit: 'cover',
+                                                            transition: 'transform 0.3s ease',
+                                                        }}
                                                     />
                                                     <IconButton
                                                         onClick={(e) => {

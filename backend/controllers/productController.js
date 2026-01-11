@@ -34,11 +34,10 @@ export const getProducts = async (req, res) => {
       ];
     }
 
-    // CRITICAL: Exclude image and images fields completely - they contain huge base64 data
-    // This is the key to fast queries - MongoDB won't read the large fields from disk
+    // Run queries in parallel for better performance
     const [products, total, allBrands] = await Promise.all([
       Product.find(query)
-        .select('-image -images') // Exclude large fields
+        .select('-images') // Exclude additional images array, keep main image
         .populate('category', 'name')
         .skip(skip)
         .limit(limit)
@@ -50,13 +49,6 @@ export const getProducts = async (req, res) => {
 
     const brands = allBrands.filter((b) => b && b.trim() !== '');
 
-    // Mark all products as needing image fetch from detail endpoint
-    const productsWithPlaceholder = products.map(product => ({
-      ...product,
-      image: null, // Will use placeholder in frontend
-      hasBase64Image: true, // Signal frontend to show placeholder
-    }));
-
     return res.json({
       success: true,
       count: products.length,
@@ -64,7 +56,7 @@ export const getProducts = async (req, res) => {
       page,
       pages: Math.ceil(total / limit),
       brands,
-      data: productsWithPlaceholder,
+      data: products,
     });
   } catch (err) {
     console.error('getProducts error:', err);
