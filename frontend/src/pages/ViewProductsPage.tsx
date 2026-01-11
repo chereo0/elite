@@ -158,6 +158,7 @@ interface Product {
     price: number;
     category: { _id: string; name: string } | string;
     image: string;
+    images?: string[];
     stock: number;
     sizes?: string[];
     colors?: string[];
@@ -204,6 +205,10 @@ const ViewProductsPage = () => {
     const [editLoading, setEditLoading] = useState(false);
     const [editImageFile, setEditImageFile] = useState<File | null>(null);
     const [editImagePreview, setEditImagePreview] = useState<string | null>(null);
+    const [editAdditionalImageFiles, setEditAdditionalImageFiles] = useState<File[]>([]);
+    const [editAdditionalImagePreviews, setEditAdditionalImagePreviews] = useState<string[]>([]);
+    const [existingImages, setExistingImages] = useState<string[]>([]);
+    const [imagesToDelete, setImagesToDelete] = useState<number[]>([]);
 
     // Delete dialog state
     const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
@@ -269,6 +274,10 @@ const ViewProductsPage = () => {
         setEditProduct({ ...product });
         setEditImageFile(null);
         setEditImagePreview(null);
+        setEditAdditionalImageFiles([]);
+        setEditAdditionalImagePreviews([]);
+        setExistingImages(product.images || []);
+        setImagesToDelete([]);
         setEditDialogOpen(true);
     };
 
@@ -281,6 +290,29 @@ const ViewProductsPage = () => {
         }
     };
 
+    const handleEditAdditionalImagesUpload = (event: React.ChangeEvent<HTMLInputElement>) => {
+        const files = event.target.files;
+        if (files) {
+            const newFiles = Array.from(files);
+            setEditAdditionalImageFiles(prev => [...prev, ...newFiles]);
+            const newPreviews = newFiles.map(file => URL.createObjectURL(file));
+            setEditAdditionalImagePreviews(prev => [...prev, ...newPreviews]);
+        }
+    };
+
+    const handleRemoveNewImage = (index: number) => {
+        setEditAdditionalImageFiles(prev => prev.filter((_, i) => i !== index));
+        setEditAdditionalImagePreviews(prev => prev.filter((_, i) => i !== index));
+    };
+
+    const handleRemoveExistingImage = (index: number) => {
+        setImagesToDelete(prev => [...prev, index]);
+    };
+
+    const handleRestoreExistingImage = (index: number) => {
+        setImagesToDelete(prev => prev.filter(i => i !== index));
+    };
+
     const handleEditSave = async () => {
         if (!editProduct) return;
         setEditLoading(true);
@@ -291,7 +323,7 @@ const ViewProductsPage = () => {
             
             let imageUrl = editProduct.image;
             
-            // If a new image was selected, upload it first
+            // If a new main image was selected, upload it first
             if (editImageFile) {
                 const imageFormData = new FormData();
                 imageFormData.append('image', editImageFile);
@@ -312,6 +344,32 @@ const ViewProductsPage = () => {
                 imageUrl = uploadData.data.url;
             }
             
+            // Filter out deleted existing images
+            const remainingExistingImages = existingImages.filter((_, index) => !imagesToDelete.includes(index));
+            
+            // Upload new additional images
+            const newImageUrls: string[] = [];
+            for (const file of editAdditionalImageFiles) {
+                const formData = new FormData();
+                formData.append('image', file);
+                
+                const uploadResponse = await fetch(`${API_URL}/upload`, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${token}`,
+                    },
+                    body: formData,
+                });
+                
+                if (uploadResponse.ok) {
+                    const uploadData = await uploadResponse.json();
+                    newImageUrls.push(uploadData.data.url);
+                }
+            }
+            
+            // Combine remaining existing images with new ones
+            const finalImages = [...remainingExistingImages, ...newImageUrls];
+            
             const response = await fetch(`${API_URL}/products/${editProduct._id}`, {
                 method: 'PUT',
                 headers: {
@@ -326,6 +384,7 @@ const ViewProductsPage = () => {
                     stock: editProduct.stock,
                     category: typeof editProduct.category === 'object' ? editProduct.category._id : editProduct.category,
                     image: imageUrl,
+                    images: finalImages,
                     shoeStyles: editProduct.shoeStyles || [],
                     socksStyles: editProduct.socksStyles || [],
                 }),
@@ -341,6 +400,10 @@ const ViewProductsPage = () => {
             setEditDialogOpen(false);
             setEditImageFile(null);
             setEditImagePreview(null);
+            setEditAdditionalImageFiles([]);
+            setEditAdditionalImagePreviews([]);
+            setExistingImages([]);
+            setImagesToDelete([]);
             fetchProducts();
         } catch (err) {
             setError(err instanceof Error ? err.message : 'Failed to update product');
@@ -884,6 +947,138 @@ const ViewProductsPage = () => {
                                         )}
                                     </Box>
                                 </Box>
+                            </Grid>
+
+                            {/* Additional Images Section */}
+                            <Grid item xs={12}>
+                                <Typography variant="subtitle2" sx={{ mb: 1, color: 'rgba(255,255,255,0.7)' }}>
+                                    Additional Images
+                                </Typography>
+                                
+                                {/* Existing Images */}
+                                {existingImages.length > 0 && (
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="caption" sx={{ color: 'rgba(255,255,255,0.5)', mb: 1, display: 'block' }}>
+                                            Current Images:
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                            {existingImages.map((img, index) => (
+                                                <Box
+                                                    key={index}
+                                                    sx={{
+                                                        position: 'relative',
+                                                        width: 80,
+                                                        height: 80,
+                                                        borderRadius: 1,
+                                                        overflow: 'hidden',
+                                                        border: imagesToDelete.includes(index) ? '2px solid #ff4444' : '1px solid rgba(30, 144, 255, 0.3)',
+                                                        opacity: imagesToDelete.includes(index) ? 0.4 : 1,
+                                                    }}
+                                                >
+                                                    <img
+                                                        src={getImageUrl(img)}
+                                                        alt={`Additional ${index + 1}`}
+                                                        onError={(e) => { e.currentTarget.src = PLACEHOLDER_IMAGE; }}
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    />
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => imagesToDelete.includes(index) ? handleRestoreExistingImage(index) : handleRemoveExistingImage(index)}
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: 2,
+                                                            right: 2,
+                                                            bgcolor: imagesToDelete.includes(index) ? 'rgba(0, 200, 83, 0.8)' : 'rgba(255, 68, 68, 0.8)',
+                                                            color: 'white',
+                                                            width: 20,
+                                                            height: 20,
+                                                            '&:hover': { bgcolor: imagesToDelete.includes(index) ? '#00c853' : '#ff4444' },
+                                                        }}
+                                                    >
+                                                        {imagesToDelete.includes(index) ? (
+                                                            <CheckCircleIcon sx={{ fontSize: 14 }} />
+                                                        ) : (
+                                                            <CloseIcon sx={{ fontSize: 14 }} />
+                                                        )}
+                                                    </IconButton>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    </Box>
+                                )}
+
+                                {/* New Images to Add */}
+                                {editAdditionalImagePreviews.length > 0 && (
+                                    <Box sx={{ mb: 2 }}>
+                                        <Typography variant="caption" sx={{ color: '#00c853', mb: 1, display: 'block' }}>
+                                            New Images to Add:
+                                        </Typography>
+                                        <Box sx={{ display: 'flex', flexWrap: 'wrap', gap: 1 }}>
+                                            {editAdditionalImagePreviews.map((preview, index) => (
+                                                <Box
+                                                    key={index}
+                                                    sx={{
+                                                        position: 'relative',
+                                                        width: 80,
+                                                        height: 80,
+                                                        borderRadius: 1,
+                                                        overflow: 'hidden',
+                                                        border: '2px solid #00c853',
+                                                    }}
+                                                >
+                                                    <img
+                                                        src={preview}
+                                                        alt={`New ${index + 1}`}
+                                                        style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                                                    />
+                                                    <IconButton
+                                                        size="small"
+                                                        onClick={() => handleRemoveNewImage(index)}
+                                                        sx={{
+                                                            position: 'absolute',
+                                                            top: 2,
+                                                            right: 2,
+                                                            bgcolor: 'rgba(255, 68, 68, 0.8)',
+                                                            color: 'white',
+                                                            width: 20,
+                                                            height: 20,
+                                                            '&:hover': { bgcolor: '#ff4444' },
+                                                        }}
+                                                    >
+                                                        <CloseIcon sx={{ fontSize: 14 }} />
+                                                    </IconButton>
+                                                </Box>
+                                            ))}
+                                        </Box>
+                                    </Box>
+                                )}
+
+                                {/* Add More Images Button */}
+                                <input
+                                    type="file"
+                                    accept="image/*"
+                                    multiple
+                                    onChange={handleEditAdditionalImagesUpload}
+                                    style={{ display: 'none' }}
+                                    id="edit-additional-images-upload"
+                                />
+                                <label htmlFor="edit-additional-images-upload">
+                                    <Button
+                                        component="span"
+                                        variant="outlined"
+                                        size="small"
+                                        sx={{
+                                            borderColor: 'rgba(30, 144, 255, 0.5)',
+                                            color: '#1e90ff',
+                                            '&:hover': {
+                                                borderColor: '#1e90ff',
+                                                bgcolor: 'rgba(30, 144, 255, 0.1)',
+                                            },
+                                        }}
+                                    >
+                                        + Add More Images
+                                    </Button>
+                                </label>
                             </Grid>
 
                             {/* Shoe Styles - Only show when sizeType is shoes */}
